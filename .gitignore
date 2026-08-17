@@ -1,0 +1,21 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Builds
+dist/
+.next/
+out/
+
+# Arquivos do banco
+reuni.sql
+
+# Logs
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
