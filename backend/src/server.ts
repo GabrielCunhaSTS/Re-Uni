@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import app from "./app";
 import sequelize from "./config/database";
-import { Usuario } from "./models";
+import "./models";
 
 dotenv.config();
 
@@ -11,10 +11,6 @@ async function startServer() {
     try {
 
         await sequelize.authenticate();
-
-        const usuarios = await Usuario.findAll();
-
-        console.log("Usuários encontrados:", usuarios.length);
 
         console.log("Banco de dados conectado!");
 
