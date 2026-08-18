@@ -1,16 +1,16 @@
-import Usuario from "./Usuario";
-import Estado from "./Estado";
-import TipoRepublica from "./TipoRepublica";
-import Republica from "./Republica";
-import LocalizacaoRepublica from "./LocalizacaoRepublica";
-import DadosRepublica from "./DadosRepublica";
-import Imagem from "./Imagem";
-import ImagemRepublica from "./ImagemRepublica";
-import Favorito from "./Favorito";
-import Comentario from "./Comentario";
-import RespostaComentario from "./RespostaComentario";
-import Aluguel from "./Aluguel";
-import ConfiguracaoUsuario from "./ConfiguracaoUsuario";
+import Usuario from "./Usuario.js";
+import Estado from "./Estado.js";
+import TipoRepublica from "./TipoRepublica.js";
+import Republica from "./Republica.js";
+import LocalizacaoRepublica from "./LocalizacaoRepublica.js";
+import DadosRepublica from "./DadosRepublica.js";
+import Imagem from "./Imagem.js";
+import ImagemRepublica from "./ImagemRepublica.js";
+import Favorito from "./Favorito.js";
+import Comentario from "./Comentario.js";
+import RespostaComentario from "./RespostaComentario.js";
+import Aluguel from "./Aluguel.js";
+import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
 
 /*
 |--------------------------------------------------------------------------

@@ -1,5 +1,5 @@
-import { DataTypes, Model, Optional } from "sequelize";
-import sequelize from "../config/database";
+import { DataTypes, Model, type Optional } from "sequelize";
+import sequelize from "../config/database.js";
 
 interface ComentarioAttributes {
     id_comentario: number;

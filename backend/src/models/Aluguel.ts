@@ -1,7 +1,7 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../config/database";
+import { DataTypes, Model, type Optional } from "sequelize";
+import sequelize from "../config/database.js";
 
-interface AluguelAttributes {
+export interface AluguelAttributes {
     id_aluguel: number;
     id_usuario: number;
     id_republica: number;
@@ -9,12 +9,18 @@ interface AluguelAttributes {
     data_fim: Date | null;
     valor: number | null;
     status: "pendente" | "ativo" | "encerrado" | "cancelado";
-    criado_em: Date;
-    atualizado_em: Date;
+    criado_em?: Date;
+    atualizado_em?: Date;
 }
 
+export interface AluguelCreationAttributes
+    extends Optional<
+        AluguelAttributes,
+        "id_aluguel" | "status" | "data_inicio" | "data_fim" | "valor" | "criado_em" | "atualizado_em"
+    > {}
+
 class Aluguel
-    extends Model<AluguelAttributes>
+    extends Model<AluguelAttributes, AluguelCreationAttributes>
     implements AluguelAttributes
 {
     declare id_aluguel: number;
@@ -23,15 +29,11 @@ class Aluguel
     declare data_inicio: Date | null;
     declare data_fim: Date | null;
     declare valor: number | null;
+    declare status: "pendente" | "ativo" | "encerrado" | "cancelado";
 
-    declare status:
-        | "pendente"
-        | "ativo"
-        | "encerrado"
-        | "cancelado";
-
-    declare criado_em: Date;
-    declare atualizado_em: Date;
+    // Timestamps declarados na classe com readonly
+    declare readonly criado_em: Date;
+    declare readonly atualizado_em: Date;
 }
 
 Aluguel.init(
@@ -41,32 +43,26 @@ Aluguel.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         id_usuario: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         id_republica: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         data_inicio: {
             type: DataTypes.DATEONLY,
             allowNull: true
         },
-
         data_fim: {
             type: DataTypes.DATEONLY,
             allowNull: true
         },
-
         valor: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: true
         },
-
         status: {
             type: DataTypes.ENUM(
                 "pendente",
@@ -74,16 +70,7 @@ Aluguel.init(
                 "encerrado",
                 "cancelado"
             ),
-            defaultValue: "pendente"
-        },
-
-        criado_em: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-
-        atualizado_em: {
-            type: DataTypes.DATE,
+            defaultValue: "pendente",
             allowNull: false
         }
     },
@@ -93,7 +80,8 @@ Aluguel.init(
         modelName: "Aluguel",
         timestamps: true,
         createdAt: "criado_em",
-        updatedAt: "atualizado_em"
+        updatedAt: "atualizado_em",
+        underscored: true
     }
 );
 

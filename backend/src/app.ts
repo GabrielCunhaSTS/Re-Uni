@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 
@@ -19,5 +20,7 @@ app.get("/", (req, res) => {
         message: "API ReUni funcionando!"
     });
 });
+
+app.use("/auth", authRoutes);
 
 export default app;
