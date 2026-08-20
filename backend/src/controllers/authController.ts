@@ -147,3 +147,52 @@ export const login = async (
     });
   }
 };
+
+export const me = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                mensagem: "Usuário não autenticado."
+            });
+            return;
+        }
+
+        const usuario = await Usuario.findByPk(
+            req.user.id_usuario,
+            {
+                attributes: [
+                    "id_usuario",
+                    "nome",
+                    "email",
+                    "telefone",
+                    "foto",
+                    "tipo",
+                    "ativo",
+                    "criado_em",
+                    "atualizado_em"
+                ]
+            }
+        );
+
+        if (!usuario) {
+            res.status(404).json({
+                mensagem: "Usuário não encontrado."
+            });
+            return;
+        }
+
+        res.status(200).json({
+            usuario
+        });
+
+    } catch (error) {
+        console.error("Erro ao buscar usuário:", error);
+
+        res.status(500).json({
+            mensagem: "Erro interno do servidor."
+        });
+    }
+};
