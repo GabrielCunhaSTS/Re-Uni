@@ -73,3 +73,62 @@ export const listarRepublicas = async () => {
         ]
     });
 };
+
+export const buscarRepublicaPorId = async (id: number) => {
+
+    return await Republica.findOne({
+        where: {
+            id_republica: id,
+            ativo: true
+        },
+        include: [
+            {
+                model: Usuario,
+                as: "anunciante",
+                attributes: [
+                    "id_usuario",
+                    "nome",
+                    "email"
+                ]
+            },
+            {
+                model: TipoRepublica,
+                as: "tipo",
+                attributes: [
+                    "id_tipo_republica",
+                    "nome",
+                    "descricao"
+                ]
+            },
+            {
+                model: LocalizacaoRepublica,
+                as: "localizacao",
+                include: [
+                    {
+                        model: Estado,
+                        as: "estado",
+                        attributes: [
+                            "id_estado",
+                            "nome",
+                            "UF"
+                        ]
+                    }
+                ]
+            },
+            {
+                model: DadosRepublica,
+                as: "dados"
+            },
+            {
+                model: Imagem,
+                as: "imagens",
+                through: {
+                    attributes: [
+                        "principal",
+                        "ordem"
+                    ]
+                }
+            }
+        ]
+    });
+};

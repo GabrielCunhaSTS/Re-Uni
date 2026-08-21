@@ -1,11 +1,13 @@
 import { Router } from "express";
 
 import {
-    listar
+    listar,
+    buscarPorId
 } from "../controllers/republicaController.js";
 
 const router = Router();
 
 router.get("/", listar);
+router.get("/:id", buscarPorId);
 
 export default router;
