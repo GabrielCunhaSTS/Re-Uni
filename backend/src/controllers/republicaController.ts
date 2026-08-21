@@ -5,8 +5,98 @@ export const listar = async (
     req: Request,
     res: Response
 ): Promise<void> => {
+
     try {
-        const republicas = await listarRepublicas();
+
+        const cidade =
+            typeof req.query.cidade === "string"
+                ? req.query.cidade
+                : undefined;
+
+        const valorMax =
+            typeof req.query.valorMax === "string"
+                ? Number(req.query.valorMax)
+                : undefined;
+
+        const valorMin =
+            typeof req.query.valorMin === "string"
+                ? Number(req.query.valorMin)
+                : undefined;
+
+        const tipo =
+            typeof req.query.tipo === "string"
+                ? Number(req.query.tipo)
+                : undefined;
+
+        if (
+            valorMax !== undefined &&
+            (!Number.isFinite(valorMax) || valorMax < 0)
+        ) {
+            res.status(400).json({
+                mensagem: "valorMax inválido."
+            });
+
+            return;
+        }
+
+        if (
+            valorMin !== undefined &&
+            (!Number.isFinite(valorMin) || valorMin < 0)
+        ) {
+            res.status(400).json({
+                mensagem: "valorMin inválido."
+            });
+
+            return;
+        }
+
+        if (
+            tipo !== undefined &&
+            (!Number.isInteger(tipo) || tipo <= 0)
+        ) {
+            res.status(400).json({
+                mensagem: "tipo inválido."
+            });
+
+            return;
+        }
+
+        if (
+            valorMin !== undefined &&
+            valorMax !== undefined &&
+            valorMin > valorMax
+        ) {
+            res.status(400).json({
+                mensagem: "valorMin não pode ser maior que valorMax."
+            });
+
+            return;
+        }
+
+        const filtros: {
+            cidade?: string;
+            valorMax?: number;
+            valorMin?: number;
+            tipo?: number;
+        } = {};
+
+        if (cidade !== undefined) {
+            filtros.cidade = cidade;
+        }
+
+        if (valorMax !== undefined) {
+            filtros.valorMax = valorMax;
+        }
+
+        if (valorMin !== undefined) {
+            filtros.valorMin = valorMin;
+        }
+
+        if (tipo !== undefined) {
+            filtros.tipo = tipo;
+        }
+
+const republicas = await listarRepublicas(filtros);
 
         res.status(200).json({
             total: republicas.length,
@@ -14,11 +104,13 @@ export const listar = async (
         });
 
     } catch (error) {
-        console.error("Erro ao listar repúblicas:", error);
+
+        console.error("Erro ao pesquisar repúblicas:", error);
 
         res.status(500).json({
             mensagem: "Erro interno do servidor."
         });
+
     }
 };
 

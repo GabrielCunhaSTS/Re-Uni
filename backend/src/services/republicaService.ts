@@ -7,14 +7,52 @@ import {
     Estado,
     Imagem
 } from "../models/index.js";
+import { Op } from "sequelize";
 
-export const listarRepublicas = async () => {
+export const listarRepublicas = async (filtros?: {
+    cidade?: string;
+    valorMax?: number;
+    valorMin?: number;
+    tipo?: number;
+}) => {
+
+    const whereRepublica: any = {
+        ativo: true
+    };
+
+    const whereLocalizacao: any = {};
+
+    if (filtros?.valorMax !== undefined) {
+        whereRepublica.valor_mensal = {
+            [Op.lte]: filtros.valorMax
+        };
+    }
+
+    if (filtros?.valorMin !== undefined) {
+
+        whereRepublica.valor_mensal = {
+            ...(whereRepublica.valor_mensal || {}),
+            [Op.gte]: filtros.valorMin
+        };
+
+    }
+
+    if (filtros?.tipo !== undefined) {
+        whereRepublica.id_tipo_republica = filtros.tipo;
+    }
+
+    if (filtros?.cidade) {
+        whereLocalizacao.cidade = {
+            [Op.like]: `%${filtros.cidade}%`
+        };
+    }
+
     return await Republica.findAll({
-        where: {
-            ativo: true
-        },
+
+        where: whereRepublica,
 
         include: [
+
             {
                 model: Usuario,
                 as: "anunciante",
@@ -38,6 +76,9 @@ export const listarRepublicas = async () => {
             {
                 model: LocalizacaoRepublica,
                 as: "localizacao",
+                where: Object.keys(whereLocalizacao).length
+                    ? whereLocalizacao
+                    : undefined,
                 include: [
                     {
                         model: Estado,
@@ -45,7 +86,7 @@ export const listarRepublicas = async () => {
                         attributes: [
                             "id_estado",
                             "nome",
-                            "UF"
+                            "uf"
                         ]
                     }
                 ]
@@ -66,11 +107,13 @@ export const listarRepublicas = async () => {
                     ]
                 }
             }
+
         ],
 
         order: [
             ["criado_em", "DESC"]
         ]
+
     });
 };
 
