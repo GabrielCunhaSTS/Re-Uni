@@ -12,6 +12,7 @@ out/
 
 # Arquivos do banco
 reuni.sql
+ReUni.mwb
 
 # Logs
 *.log
@@ -19,3 +20,8 @@ reuni.sql
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Postman
+.postman/
+postman/
+
