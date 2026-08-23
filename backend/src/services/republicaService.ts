@@ -9,45 +9,13 @@ import {
     Imagem
 } from "../models/index.js";
 import { Op } from "sequelize";
-
-
-export interface CriarRepublicaDTO {
-    id_tipo_republica: number;
-    nome: string;
-    descricao?: string | null;
-    valor_mensal: number;
-    vagas_total: number;
-    vagas_disponiveis: number;
-    localizacao: {
-        cep?: string | null;
-        endereco?: string | null;
-        numero?: string | null;
-        complemento?: string | null;
-        bairro: string;
-        cidade: string;
-        id_estado: number;
-        latitude?: number | null;
-        longitude?: number | null;
-    };
-    dados?: {
-        quartos?: number;
-        banheiros?: number;
-        moradores?: number;
-        mobiliada?: boolean;
-        possui_internet?: boolean;
-        possui_garagem?: boolean;
-        possui_lavanderia?: boolean;
-        possui_area_lazer?: boolean;
-        aceita_pets?: boolean;
-    };
-}
+import type { CreateRepublicaInput } from "../schemas/republicaSchema.js";
 
 export const criarRepublica = async (
-    dadosEntrada: CriarRepublicaDTO,
+    dadosEntrada: CreateRepublicaInput,
     id_usuario: number
 ) => {
     return await sequelize.transaction(async (t) => {
-        
         const novaRepublica = await Republica.create(
             {
                 id_usuario,
@@ -56,13 +24,15 @@ export const criarRepublica = async (
                 descricao: dadosEntrada.descricao ?? null,
                 valor_mensal: dadosEntrada.valor_mensal,
                 vagas_total: dadosEntrada.vagas_total,
-                vagas_disponiveis: dadosEntrada.vagas_disponiveis,
+                vagas_disponiveis:
+                    dadosEntrada.vagas_disponiveis !== undefined
+                        ? dadosEntrada.vagas_disponiveis
+                        : dadosEntrada.vagas_total,
                 ativo: true
             },
             { transaction: t }
         );
 
-        
         await LocalizacaoRepublica.create(
             {
                 id_republica: novaRepublica.id_republica,
@@ -79,7 +49,6 @@ export const criarRepublica = async (
             { transaction: t }
         );
 
-        
         await DadosRepublica.create(
             {
                 id_republica: novaRepublica.id_republica,
@@ -96,7 +65,6 @@ export const criarRepublica = async (
             { transaction: t }
         );
 
-        
         return await Republica.findByPk(novaRepublica.id_republica, {
             include: [
                 {
@@ -131,14 +99,122 @@ export const criarRepublica = async (
 };
 
 export const listarRepublicas = async (filtros?: {
-    cidade?: string;
-    valorMax?: number;
-    valorMin?: number;
-    tipo?: number;
+    cidade?: string | undefined;
+    valorMax?: number | undefined;
+    valorMin?: number | undefined;
+    tipo?: number | undefined;
 }) => {
-    
+    const whereRepublica: any = {
+        ativo: true
+    };
+
+    const whereLocalizacao: any = {};
+
+    if (filtros?.valorMax !== undefined) {
+        whereRepublica.valor_mensal = {
+            [Op.lte]: filtros.valorMax
+        };
+    }
+
+    if (filtros?.valorMin !== undefined) {
+        whereRepublica.valor_mensal = {
+            ...(whereRepublica.valor_mensal || {}),
+            [Op.gte]: filtros.valorMin
+        };
+    }
+
+    if (filtros?.tipo !== undefined) {
+        whereRepublica.id_tipo_republica = filtros.tipo;
+    }
+
+    if (filtros?.cidade) {
+        whereLocalizacao.cidade = {
+            [Op.like]: `%${filtros.cidade}%`
+        };
+    }
+
+    return await Republica.findAll({
+        where: whereRepublica,
+        include: [
+            {
+                model: Usuario,
+                as: "anunciante",
+                attributes: ["id_usuario", "nome", "email"]
+            },
+            {
+                model: TipoRepublica,
+                as: "tipo",
+                attributes: ["id_tipo_republica", "nome", "descricao"]
+            },
+            {
+                model: LocalizacaoRepublica,
+                as: "localizacao",
+                where: Object.keys(whereLocalizacao).length
+                    ? whereLocalizacao
+                    : undefined,
+                include: [
+                    {
+                        model: Estado,
+                        as: "estado",
+                        attributes: ["id_estado", "nome", "uf"]
+                    }
+                ]
+            },
+            {
+                model: DadosRepublica,
+                as: "dados"
+            },
+            {
+                model: Imagem,
+                as: "imagens",
+                through: {
+                    attributes: ["principal", "ordem"]
+                }
+            }
+        ],
+        order: [["criado_em", "DESC"]]
+    });
 };
 
 export const buscarRepublicaPorId = async (id: number) => {
-    
+    return await Republica.findOne({
+        where: {
+            id_republica: id,
+            ativo: true
+        },
+        include: [
+            {
+                model: Usuario,
+                as: "anunciante",
+                attributes: ["id_usuario", "nome", "email"]
+            },
+            {
+                model: TipoRepublica,
+                as: "tipo",
+                attributes: ["id_tipo_republica", "nome", "descricao"]
+            },
+            {
+                model: LocalizacaoRepublica,
+                as: "localizacao",
+                include: [
+                    {
+                        model: Estado,
+                        as: "estado",
+                        attributes: ["id_estado", "nome", "uf"]
+                    }
+                ]
+            },
+            {
+                model: DadosRepublica,
+                as: "dados"
+            },
+            {
+                model: Imagem,
+                as: "imagens",
+                through: {
+                    attributes: ["principal", "ordem"]
+                }
+            }
+        ]
+    });
 };
