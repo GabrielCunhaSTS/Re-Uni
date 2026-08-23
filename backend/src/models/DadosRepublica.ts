@@ -15,8 +15,25 @@ interface DadosRepublicaAttributes {
     aceita_pets: boolean;
 }
 
+
+export interface DadosRepublicaCreationAttributes
+    extends Optional<
+        DadosRepublicaAttributes,
+        | "id_dados"
+        | "quartos"
+        | "banheiros"
+        | "moradores"
+        | "mobiliada"
+        | "possui_internet"
+        | "possui_garagem"
+        | "possui_lavanderia"
+        | "possui_area_lazer"
+        | "aceita_pets"
+    > {}
+
+
 class DadosRepublica
-    extends Model<DadosRepublicaAttributes>
+    extends Model<DadosRepublicaAttributes, DadosRepublicaCreationAttributes>
     implements DadosRepublicaAttributes
 {
     declare id_dados: number;

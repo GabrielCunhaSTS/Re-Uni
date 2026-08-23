@@ -15,8 +15,23 @@ interface LocalizacaoRepublicaAttributes {
     longitude: number | null;
 }
 
+export interface LocalizacaoRepublicaCreationAttributes
+    extends Optional<
+        LocalizacaoRepublicaAttributes,
+        | "id_localizacao"
+        | "cep"
+        | "endereco"
+        | "numero"
+        | "complemento"
+        | "latitude"
+        | "longitude"
+    > {}
+
 class LocalizacaoRepublica
-    extends Model<LocalizacaoRepublicaAttributes>
+    extends Model<
+        LocalizacaoRepublicaAttributes,
+        LocalizacaoRepublicaCreationAttributes
+    >
     implements LocalizacaoRepublicaAttributes
 {
     declare id_localizacao: number;
