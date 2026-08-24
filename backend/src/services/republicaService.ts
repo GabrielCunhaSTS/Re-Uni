@@ -9,7 +9,7 @@ import {
     Imagem
 } from "../models/index.js";
 import { Op } from "sequelize";
-import type { CreateRepublicaInput } from "../schemas/republicaSchema.js";
+import type { CreateRepublicaInput, UpdateRepublicaInput } from "../schemas/republicaSchema.js";
 
 export const criarRepublica = async (
     dadosEntrada: CreateRepublicaInput,
@@ -217,4 +217,57 @@ export const buscarRepublicaPorId = async (id: number) => {
             }
         ]
     });
+};
+
+export const atualizarRepublica = async (
+    id_republica: number,
+    id_usuario: number,
+    dadosEntrada: UpdateRepublicaInput
+) => {
+    
+    await sequelize.transaction(async (t) => {
+        const republica = await Republica.findByPk(id_republica);
+
+        if (!republica) {
+            throw new Error("REPUBLICA_NAO_ENCONTRADA");
+        }
+
+        if (republica.id_usuario !== id_usuario) {
+            throw new Error("NAO_AUTORIZADO");
+        }
+
+        await republica.update({
+            id_tipo_republica: dadosEntrada.id_tipo_republica ?? republica.id_tipo_republica,
+            nome: dadosEntrada.nome ?? republica.nome,
+            descricao: dadosEntrada.descricao ?? republica.descricao,
+            valor_mensal: dadosEntrada.valor_mensal ?? republica.valor_mensal,
+            vagas_total: dadosEntrada.vagas_total ?? republica.vagas_total,
+            vagas_disponiveis: dadosEntrada.vagas_disponiveis ?? republica.vagas_disponiveis,
+        }, { transaction: t });
+
+        if (dadosEntrada.localizacao) {
+            const dadosLocalizacao = Object.fromEntries(
+                Object.entries(dadosEntrada.localizacao).filter(([_, valor]) => valor !== undefined)
+            ) as any;
+
+            await LocalizacaoRepublica.update(
+                dadosLocalizacao,
+                { where: { id_republica: republica.id_republica }, transaction: t }
+            );
+        }
+
+        if (dadosEntrada.dados) {
+            const dadosExtras = Object.fromEntries(
+                Object.entries(dadosEntrada.dados).filter(([_, valor]) => valor !== undefined)
+            ) as any;
+
+            await DadosRepublica.update(
+                dadosExtras,
+                { where: { id_republica: republica.id_republica }, transaction: t }
+            );
+        }
+    }); 
+
+    
+    return await buscarRepublicaPorId(id_republica); 
 };

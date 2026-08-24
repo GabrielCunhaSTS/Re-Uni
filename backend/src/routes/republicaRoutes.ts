@@ -2,19 +2,20 @@ import { Router } from "express";
 import {
     listar,
     buscarPorId,
-    criar
+    criar,
+    atualizar 
 } from "../controllers/republicaController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-
 router.get("/", listar);
-
 
 router.get("/:id", buscarPorId);
 
-
 router.post("/", authMiddleware, criar);
+
+
+router.put("/:id", authMiddleware, atualizar);
 
 export default router;
