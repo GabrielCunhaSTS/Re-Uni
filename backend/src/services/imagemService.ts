@@ -1,5 +1,7 @@
 import sequelize from "../config/database.js";
 import { Imagem, ImagemRepublica, Republica } from "../models/index.js";
+import fs from "fs";
+import path from "path";
 
 export const adicionarImagens = async (
     id_republica: number,
@@ -52,4 +54,56 @@ export const adicionarImagens = async (
 
         return imagensSalvas;
     });
+};
+
+export const deletarImagem = async (
+    id_republica: number,
+    id_imagem: number,
+    id_usuario: number
+) => {
+    
+    const republica = await Republica.findByPk(id_republica);
+
+    if (!republica || !republica.ativo) {
+        throw new Error("REPUBLICA_NAO_ENCONTRADA");
+    }
+
+    if (republica.id_usuario !== id_usuario) {
+        throw new Error("NAO_AUTORIZADO");
+    }
+
+    
+    const imagemVinculo = await ImagemRepublica.findOne({
+        where: { id_republica, id_imagem }
+    });
+
+    if (!imagemVinculo) {
+        throw new Error("IMAGEM_NAO_ENCONTRADA");
+    }
+
+    
+    const imagem = await Imagem.findByPk(id_imagem);
+
+    
+    await sequelize.transaction(async (t) => {
+        await imagemVinculo.destroy({ transaction: t });
+        if (imagem) {
+            await imagem.destroy({ transaction: t });
+        }
+    });
+
+    
+    if (imagem) {
+        
+        const nomeArquivo = imagem.url.split("/").pop();
+        
+        if (nomeArquivo) {
+            const caminhoFisico = path.join(process.cwd(), "uploads", nomeArquivo);
+            
+            
+            if (fs.existsSync(caminhoFisico)) {
+                fs.unlinkSync(caminhoFisico); 
+            }
+        }
+    }
 };
