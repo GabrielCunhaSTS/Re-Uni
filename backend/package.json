@@ -26,6 +26,7 @@
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
     "mysql2": "^3.23.3",
     "sequelize": "^6.37.8",
     "zod": "^4.4.3"
@@ -36,6 +37,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
     "@types/node": "^26.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",

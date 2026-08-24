@@ -7,14 +7,19 @@ interface ImagemAttributes {
     criado_em: Date;
 }
 
+
+export interface ImagemCreationAttributes extends Optional<ImagemAttributes, "id_imagem" | "criado_em"> {}
+
+
 class Imagem
-    extends Model<ImagemAttributes>
+    extends Model<ImagemAttributes, ImagemCreationAttributes>
     implements ImagemAttributes
 {
     declare id_imagem: number;
     declare url: string;
     declare criado_em: Date;
 }
+
 
 Imagem.init(
     {
