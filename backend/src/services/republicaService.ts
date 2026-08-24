@@ -271,3 +271,24 @@ export const atualizarRepublica = async (
     
     return await buscarRepublicaPorId(id_republica); 
 };
+
+export const deletarRepublica = async (
+    id_republica: number,
+    id_usuario: number
+) => {
+    
+    const republica = await Republica.findByPk(id_republica);
+
+    
+    if (!republica || !republica.ativo) {
+        throw new Error("REPUBLICA_NAO_ENCONTRADA");
+    }
+
+    
+    if (republica.id_usuario !== id_usuario) {
+        throw new Error("NAO_AUTORIZADO");
+    }
+
+    
+    await republica.update({ ativo: false });
+};
