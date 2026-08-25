@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js";
 import republicaRoutes from "./routes/republicaRoutes.js";
 import path from "path";
 import favoritoRoutes from "./routes/favoritoRoutes.js";
+import comentarioRoutes from "./routes/comentarioRoutes.js";
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/republicas", republicaRoutes);
 app.use("/api/favoritos", favoritoRoutes);
+app.use("/api", comentarioRoutes);
 
 export default app;
