@@ -7,8 +7,10 @@ interface FavoritoAttributes {
     criado_em: Date;
 }
 
+export interface FavoritoCreationAttributes extends Optional<FavoritoAttributes, "criado_em"> {}
+
 class Favorito
-    extends Model<FavoritoAttributes>
+    extends Model<FavoritoAttributes, FavoritoCreationAttributes> 
     implements FavoritoAttributes
 {
     declare id_usuario: number;
@@ -30,7 +32,8 @@ Favorito.init(
 
         criado_em: {
             type: DataTypes.DATE,
-            allowNull: false
+            allowNull: false,
+            defaultValue: DataTypes.NOW
         }
     },
     {

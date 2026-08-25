@@ -12,11 +12,7 @@ import RespostaComentario from "./RespostaComentario.js";
 import Aluguel from "./Aluguel.js";
 import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
 
-/*
-|--------------------------------------------------------------------------
-| USUARIO
-|--------------------------------------------------------------------------
-*/
+
 
 Usuario.hasMany(Republica, {
     foreignKey: "id_usuario",
@@ -78,11 +74,7 @@ ConfiguracaoUsuario.belongsTo(Usuario, {
     as: "usuario"
 });
 
-/*
-|--------------------------------------------------------------------------
-| REPUBLICA
-|--------------------------------------------------------------------------
-*/
+
 
 TipoRepublica.hasMany(Republica, {
     foreignKey: "id_tipo_republica",
@@ -124,11 +116,7 @@ DadosRepublica.belongsTo(Republica, {
     as: "republica"
 });
 
-/*
-|--------------------------------------------------------------------------
-| IMAGENS
-|--------------------------------------------------------------------------
-*/
+
 
 Republica.belongsToMany(Imagem, {
     through: ImagemRepublica,
@@ -159,11 +147,7 @@ ImagemRepublica.belongsTo(Imagem, {
     as: "imagem"
 });
 
-/*
-|--------------------------------------------------------------------------
-| FAVORITOS
-|--------------------------------------------------------------------------
-*/
+
 
 Republica.hasMany(Favorito, {
     foreignKey: "id_republica",
@@ -175,11 +159,21 @@ Favorito.belongsTo(Republica, {
     as: "republica"
 });
 
-/*
-|--------------------------------------------------------------------------
-| COMENTARIOS
-|--------------------------------------------------------------------------
-*/
+Usuario.belongsToMany(Republica, {
+    through: Favorito,
+    foreignKey: "id_usuario",
+    otherKey: "id_republica",
+    as: "republicasFavoritas"
+});
+
+Republica.belongsToMany(Usuario, {
+    through: Favorito,
+    foreignKey: "id_republica",
+    otherKey: "id_usuario",
+    as: "favoritadoPor"
+});
+
+
 
 Republica.hasMany(Comentario, {
     foreignKey: "id_republica",
@@ -201,11 +195,7 @@ RespostaComentario.belongsTo(Comentario, {
     as: "comentario"
 });
 
-/*
-|--------------------------------------------------------------------------
-| ALUGUEIS
-|--------------------------------------------------------------------------
-*/
+
 
 Republica.hasMany(Aluguel, {
     foreignKey: "id_republica",
