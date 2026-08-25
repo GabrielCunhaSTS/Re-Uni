@@ -9,10 +9,14 @@ import {
 import { uploadImagens,removerImagem } from "../controllers/imagemController.js";
 import { uploadMiddleware } from "../middlewares/uploadMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { buscarRepublicas } from "../controllers/republicaFiltroController.js";
+
+
 
 const router = Router();
 
 router.get("/", listar);
+router.get("/buscar", buscarRepublicas);
 router.get("/:id", buscarPorId);
 router.post("/", authMiddleware, criar);
 router.put("/:id", authMiddleware, atualizar);
