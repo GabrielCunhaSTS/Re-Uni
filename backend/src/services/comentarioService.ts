@@ -1,4 +1,4 @@
-import { Comentario, Usuario, Republica } from "../models/index.js";
+import { Comentario, Usuario, Republica, RespostaComentario } from "../models/index.js";
 
 export const criarComentarioService = async (
     id_usuario: number,
@@ -40,9 +40,23 @@ export const listarComentariosDaRepublicaService = async (id_republica: number) 
                 model: Usuario,
                 as: "usuario",
                 attributes: ["id_usuario", "nome"]
+            },
+            {
+                model: RespostaComentario,
+                as: "respostas", 
+                include: [
+                    {
+                        model: Usuario,
+                        as: "usuario",
+                        attributes: ["id_usuario", "nome"]
+                    }
+                ]
             }
         ],
-        order: [["criado_em", "DESC"]] 
+        order: [
+            ["criado_em", "DESC"],
+            [{ model: RespostaComentario, as: "respostas" }, "criado_em", "ASC"] 
+        ]
     });
 
     return comentarios;

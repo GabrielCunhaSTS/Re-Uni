@@ -10,8 +10,19 @@ interface RespostaComentarioAttributes {
     atualizado_em: Date;
 }
 
+interface RespostaComentarioCreationAttributes
+    extends Optional<
+        RespostaComentarioAttributes,
+        | "id_resposta"
+        | "criado_em"
+        | "atualizado_em"
+    > {}
+
 class RespostaComentario
-    extends Model<RespostaComentarioAttributes>
+    extends Model<
+        RespostaComentarioAttributes,
+        RespostaComentarioCreationAttributes
+    >
     implements RespostaComentarioAttributes
 {
     declare id_resposta: number;

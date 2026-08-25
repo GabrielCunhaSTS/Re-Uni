@@ -14,6 +14,7 @@ import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
 
 
 
+
 Usuario.hasMany(Republica, {
     foreignKey: "id_usuario",
     as: "republicas"

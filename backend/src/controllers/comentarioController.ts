@@ -9,7 +9,7 @@ export const criarComentario = async (req: Request, res: Response): Promise<void
     try {
         const id_usuario = req.user?.id_usuario;
         const id_republica = Number(req.params.id);
-        const { conteudo } = req.body;
+        const { texto } = req.body;
 
         if (!id_usuario) {
             res.status(401).json({ mensagem: "Usuário não autenticado." });
@@ -21,12 +21,12 @@ export const criarComentario = async (req: Request, res: Response): Promise<void
             return;
         }
 
-        if (!conteudo || typeof conteudo !== "string" || conteudo.trim() === "") {
+        if (!texto || typeof texto !== "string" || texto.trim() === "") {
             res.status(400).json({ mensagem: "O conteúdo do comentário é obrigatório." });
             return;
         }
 
-        const comentarioCriado = await criarComentarioService(id_usuario, id_republica, conteudo);
+        const comentarioCriado = await criarComentarioService(id_usuario, id_republica, texto);
 
         res.status(201).json({
             mensagem: "Comentário adicionado com sucesso!",
