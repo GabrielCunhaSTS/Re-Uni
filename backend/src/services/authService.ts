@@ -7,6 +7,7 @@ interface RegisterData {
     nome: string;
     email: string;
     senha: string;
+    tipo?: "estudante" | "anunciante";
 }
 
 interface LoginData {
@@ -17,8 +18,7 @@ interface LoginData {
 export const registerUsuario = async (
     data: RegisterData
 ) => {
-
-    const { nome, email, senha } = data;
+    const { nome, email, senha, tipo } = data; 
 
     const usuarioExistente = await Usuario.findOne({
         where: { email }
@@ -29,22 +29,20 @@ export const registerUsuario = async (
     }
 
     const saltRounds = 10;
-
-    const senhaHash = await bcrypt.hash(
-        senha,
-        saltRounds
-    );
+    const senhaHash = await bcrypt.hash(senha, saltRounds);
 
     const novoUsuario = await Usuario.create({
         nome,
         email,
-        senha: senhaHash
+        senha: senhaHash,
+        tipo: tipo || "estudante" 
     });
 
     return {
         id_usuario: novoUsuario.id_usuario,
         nome: novoUsuario.nome,
-        email: novoUsuario.email
+        email: novoUsuario.email,
+        tipo: novoUsuario.tipo
     };
 };
 

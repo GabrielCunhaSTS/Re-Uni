@@ -8,6 +8,8 @@ import favoritoRoutes from "./routes/favoritoRoutes.js";
 import comentarioRoutes from "./routes/comentarioRoutes.js";
 import respostaRoutes from "./routes/respostaRoutes.js";
 import configuracaoRoutes from "./routes/usuarioRoutes.js";
+import aluguelRoutes from "./routes/aluguelRoutes.js";
+
 
 const app = express();
 
@@ -33,5 +35,7 @@ app.use("/api/favoritos", favoritoRoutes);
 app.use("/api", comentarioRoutes);
 app.use("/api", respostaRoutes);
 app.use("/api", configuracaoRoutes);
+app.use("/api", aluguelRoutes);
+
 
 export default app;
