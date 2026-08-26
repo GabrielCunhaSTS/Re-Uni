@@ -7,8 +7,14 @@ interface ConfiguracaoUsuarioAttributes {
     idioma: "pt-BR" | "en" | "ko" | "ja" | "de";
 }
 
+interface ConfiguracaoUsuarioCreationAttributes
+    extends Optional<ConfiguracaoUsuarioAttributes, "tema" | "idioma"> {}
+
 class ConfiguracaoUsuario
-    extends Model<ConfiguracaoUsuarioAttributes>
+    extends Model<
+        ConfiguracaoUsuarioAttributes,
+        ConfiguracaoUsuarioCreationAttributes 
+    >
     implements ConfiguracaoUsuarioAttributes
 {
     declare id_usuario: number;
