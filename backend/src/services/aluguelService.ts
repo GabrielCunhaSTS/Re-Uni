@@ -1,6 +1,6 @@
 import { Aluguel, Republica, Usuario } from "../models/index.js";
+import { criarNotificacaoInterna } from "./notificacaoService.js";
 import { Op } from "sequelize";
-
 
 export const solicitarAluguelService = async (id_usuario: number, id_republica: number, data_inicio?: string) => {
     const republica = await Republica.findByPk(id_republica);
@@ -26,6 +26,12 @@ export const solicitarAluguelService = async (id_usuario: number, id_republica: 
         status: "pendente",
         data_inicio: data_inicio ? new Date(data_inicio) : new Date()
     });
+
+    await criarNotificacaoInterna(
+        republica.id_usuario, 
+        "Nova solicitação de vaga! 🏠",
+        `Um estudante demonstrou interesse em morar na sua república: ${republica.nome}. Acesse seus pedidos para responder.`
+    );
 
     return await Aluguel.findByPk(novoAluguel.id_aluguel, {
         include: [
@@ -62,8 +68,22 @@ export const atualizarStatusAluguelService = async (id_aluguel: number, status: 
         }
         await aluguel.republica.update({ vagas_disponiveis: aluguel.republica.vagas_disponiveis - 1 });
         
+        await criarNotificacaoInterna(
+            aluguel.id_usuario, 
+            "Pedido Aprovado! 🎉",
+            `Parabéns! Sua solicitação para morar na república ${aluguel.republica.nome} foi aprovada. Bem-vindo(a)!`
+        );
+        
     } else if ((status === "encerrado" || status === "cancelado") && aluguel.status === "ativo") {
         await aluguel.republica.update({ vagas_disponiveis: aluguel.republica.vagas_disponiveis + 1 });
+        
+        if (status === "cancelado") {
+            await criarNotificacaoInterna(
+                aluguel.id_usuario, 
+                "Pedido Cancelado",
+                `Infelizmente, a sua solicitação ou aluguel na república ${aluguel.republica.nome} foi cancelado.`
+            );
+        }
     }
 
     await aluguel.update({ status });
