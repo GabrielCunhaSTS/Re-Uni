@@ -1,15 +1,17 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import path from "path";
+
 import authRoutes from "./routes/authRoutes.js";
 import republicaRoutes from "./routes/republicaRoutes.js";
-import path from "path";
 import favoritoRoutes from "./routes/favoritoRoutes.js";
 import comentarioRoutes from "./routes/comentarioRoutes.js";
 import respostaRoutes from "./routes/respostaRoutes.js";
 import configuracaoRoutes from "./routes/usuarioRoutes.js";
 import aluguelRoutes from "./routes/aluguelRoutes.js";
-
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import avaliacaoRoutes from "./routes/avaliacaoRoutes.js";
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.use("/api", comentarioRoutes);
 app.use("/api", respostaRoutes);
 app.use("/api", configuracaoRoutes);
 app.use("/api", aluguelRoutes);
-
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api", avaliacaoRoutes);
 
 export default app;

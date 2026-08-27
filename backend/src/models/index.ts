@@ -11,7 +11,7 @@ import Comentario from "./Comentario.js";
 import RespostaComentario from "./RespostaComentario.js";
 import Aluguel from "./Aluguel.js";
 import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
-
+import Avaliacao from "./Avaliacao.js";
 
 
 
@@ -208,6 +208,13 @@ Aluguel.belongsTo(Republica, {
     as: "republica"
 });
 
+Avaliacao.belongsTo(Usuario, { foreignKey: "id_usuario", as: "usuario" });
+Usuario.hasMany(Avaliacao, { foreignKey: "id_usuario", as: "avaliacoes" });
+
+Avaliacao.belongsTo(Republica, { foreignKey: "id_republica", as: "republica" });
+Republica.hasMany(Avaliacao, { foreignKey: "id_republica", as: "avaliacoes" });
+
+
 export {
     Usuario,
     Estado,
@@ -221,5 +228,6 @@ export {
     Comentario,
     RespostaComentario,
     Aluguel,
-    ConfiguracaoUsuario
+    ConfiguracaoUsuario,
+    Avaliacao
 };
