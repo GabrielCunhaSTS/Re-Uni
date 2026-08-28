@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
-import { Republica } from "../models/index.js";
+import { Republica, Imagem, LocalizacaoRepublica, DadosRepublica, TipoRepublica } from "../models/index.js";
 import {
     listarRepublicas,
     buscarRepublicaPorId,
@@ -242,6 +242,27 @@ export const listarMinhasRepublicas = async (req: Request, res: Response): Promi
 
         const republicas = await Republica.findAll({
             where: { id_usuario, ativo: true },
+            include: [
+                {
+                    model: Imagem,
+                    as: "imagens",
+                    through: {
+                        attributes: ["principal", "ordem"]
+                    }
+                },
+                {
+                    model: LocalizacaoRepublica,
+                    as: "localizacao"
+                },
+                {
+                    model: DadosRepublica,
+                    as: "dados"
+                },
+                {
+                    model: TipoRepublica,
+                    as: "tipo"
+                }
+            ],
             order: [["criado_em", "DESC"]]
         });
 

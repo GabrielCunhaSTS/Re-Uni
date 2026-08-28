@@ -133,7 +133,7 @@ export const listarRepublicas = async (filtros?: {
         };
     }
 
-    return await Republica.findAll({
+return await Republica.findAll({
         where: whereRepublica,
         include: [
             {
@@ -149,16 +149,6 @@ export const listarRepublicas = async (filtros?: {
             {
                 model: LocalizacaoRepublica,
                 as: "localizacao",
-                where: Object.keys(whereLocalizacao).length
-                    ? whereLocalizacao
-                    : undefined,
-                include: [
-                    {
-                        model: Estado,
-                        as: "estado",
-                        attributes: ["id_estado", "nome", "uf"]
-                    }
-                ]
             },
             {
                 model: DadosRepublica,

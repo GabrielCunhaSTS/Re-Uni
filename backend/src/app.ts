@@ -16,7 +16,9 @@ import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 app.use(cors({
     origin: "http://localhost:3000",
@@ -25,6 +27,11 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    next();
+}, express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
     res.json({

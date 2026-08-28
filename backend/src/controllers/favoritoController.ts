@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { alternarFavoritoService } from "../services/favoritoService.js";
-import { Usuario, Republica, Imagem } from "../models/index.js";
+import { Usuario, Republica, Imagem, LocalizacaoRepublica, DadosRepublica, TipoRepublica } from "../models/index.js";
 
 export const toggleFavorito = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -12,7 +12,7 @@ export const toggleFavorito = async (req: Request, res: Response): Promise<void>
             return;
         }
 
-        if (!Number.isInteger(id_republica)) {
+        if (!Number.isInteger(id_republica) || id_republica <= 0) {
             res.status(400).json({ mensagem: "ID da república inválido." });
             return;
         }
@@ -47,7 +47,20 @@ export const listarFavoritos = async (req: Request, res: Response): Promise<void
                     include: [
                         {
                             model: Imagem,
-                            as: "imagens"
+                            as: "imagens",
+                            through: { attributes: ["principal", "ordem"] }
+                        },
+                        {
+                            model: LocalizacaoRepublica,
+                            as: "localizacao"
+                        },
+                        {
+                            model: DadosRepublica,
+                            as: "dados"
+                        },
+                        {
+                            model: TipoRepublica,
+                            as: "tipo"
                         }
                     ]
                 }
