@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
+import { Republica } from "../models/index.js";
 import {
     listarRepublicas,
     buscarRepublicaPorId,
@@ -131,9 +132,6 @@ export const buscarPorId = async (
     }
 };
 
-
-
-
 export const atualizar = async (
     req: Request,
     res: Response
@@ -192,7 +190,6 @@ export const atualizar = async (
     }
 };
 
-
 export const deletar = async (
     req: Request,
     res: Response
@@ -231,5 +228,26 @@ export const deletar = async (
 
         console.error("Erro ao deletar república:", error);
         res.status(500).json({ mensagem: "Erro interno do servidor ao deletar república." });
+    }
+};
+
+export const listarMinhasRepublicas = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id_usuario = req.user?.id_usuario;
+
+        if (!id_usuario) {
+            res.status(401).json({ mensagem: "Usuário não autenticado." });
+            return;
+        }
+
+        const republicas = await Republica.findAll({
+            where: { id_usuario, ativo: true },
+            order: [["criado_em", "DESC"]]
+        });
+
+        res.status(200).json(republicas);
+    } catch (error) {
+        console.error("Erro ao listar minhas repúblicas:", error);
+        res.status(500).json({ mensagem: "Erro interno do servidor." });
     }
 };

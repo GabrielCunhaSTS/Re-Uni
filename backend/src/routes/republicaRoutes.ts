@@ -4,7 +4,8 @@ import {
     buscarPorId,
     criar,
     atualizar,
-    deletar
+    deletar,
+    listarMinhasRepublicas
 } from "../controllers/republicaController.js";
 import { uploadImagens,removerImagem } from "../controllers/imagemController.js";
 import { uploadMiddleware } from "../middlewares/uploadMiddleware.js";
@@ -17,6 +18,7 @@ const router = Router();
 
 router.get("/", listar);
 router.get("/buscar", buscarRepublicas);
+router.get("/minhas", authMiddleware, listarMinhasRepublicas);
 router.get("/:id", buscarPorId);
 router.post("/", authMiddleware, criar);
 router.put("/:id", authMiddleware, atualizar);
