@@ -5,29 +5,37 @@ import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home } from "lucide-react";
+import { LogOut, Home, Plus, Trash2, Edit } from "lucide-react";
 
-export default function DashboardPage() {
+export default function DashboardAnunciantePage() {
     const router = useRouter();
-    const [userName, setUserName] = useState("Estudante");
+    const [userName, setUserName] = useState("Anunciante");
 
     useEffect(() => {
         const token = localStorage.getItem("@ReUni:token");
-        const user = localStorage.getItem("@ReUni:user");
+        const userStr = localStorage.getItem("@ReUni:user");
         
-        if (!token) {
+        if (!token || !userStr) {
             router.push("/login");
-        } else if (user) {
-            setUserName(JSON.parse(user).nome || "Estudante");
+            return;
         }
+
+        const user = JSON.parse(userStr);
+
+        if (user.tipo === "estudante") {
+            alert("Área exclusiva para anunciantes.");
+            router.push("/");
+            return;
+        }
+
+        setUserName(user.nome || "Anunciante");
     }, [router]);
 
     const { data: republicas, isLoading, isError } = useQuery({
-        queryKey: ["republicas"],
+        queryKey: ["minhas-republicas"],
         queryFn: async () => {
-            const response = await api.get("/republicas"); 
-            
-            return response.data.republicas; 
+            const response = await api.get("/republicas/minhas"); 
+            return response.data;
         },
     });
 
@@ -42,7 +50,7 @@ export default function DashboardPage() {
             <header className="bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
                     <Home className="text-zinc-900 w-6 h-6" />
-                    <h1 className="text-xl font-bold text-zinc-900">ReUni</h1>
+                    <h1 className="text-xl font-bold text-zinc-900">ReUni <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md ml-2 border">Painel do Anunciante</span></h1>
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-zinc-600 hidden sm:block">
@@ -56,28 +64,36 @@ export default function DashboardPage() {
             </header>
 
             <main className="max-w-6xl mx-auto px-6 py-8">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-zinc-900">Repúblicas Disponíveis</h2>
-                    <p className="text-zinc-600">Encontre o lugar ideal para sua jornada universitária.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-zinc-900">Minhas Repúblicas</h2>
+                        <p className="text-zinc-600">Gerencie seus imóveis anunciados na plataforma.</p>
+                    </div>
+                    <Button onClick={() => router.push("/dashboard/nova")}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Nova República
+                    </Button>
                 </div>
 
                 {isLoading && (
-                    <p className="text-zinc-500 animate-pulse">Carregando repúblicas...</p>
+                    <p className="text-zinc-500 animate-pulse">Carregando suas repúblicas...</p>
                 )}
 
                 {isError && (
-                    <p className="text-red-500">Erro ao carregar os dados. Verifique sua API.</p>
+                    <p className="text-red-500">Erro ao carregar seus imóveis. Verifique sua API ou se a rota /dashboard/republicas está correta.</p>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {republicas?.length === 0 && !isLoading && (
-                        <p className="text-zinc-500 col-span-full">Nenhuma república cadastrada ainda.</p>
+                        <div className="col-span-full bg-white rounded-xl border border-zinc-200 p-8 text-center">
+                            <p className="text-zinc-500 mb-4">Você ainda não cadastrou nenhuma república.</p>
+                            <Button onClick={() => router.push("/dashboard/nova")}>Cadastrar Agora</Button>
+                        </div>
                     )}
 
                     {republicas?.map((republica: any) => (
-                        <div key={republica.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                            {/* Imagem Placeholder (Pode substituir pela imagem real depois) */}
-                            <div className="h-48 bg-zinc-200 w-full object-cover flex items-center justify-center text-zinc-400">
+                        <div key={republica.id || republica.id_republica} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col">
+                            <div className="h-40 bg-zinc-200 w-full flex items-center justify-center text-zinc-400">
                                 Sem Imagem
                             </div>
                             
@@ -87,7 +103,7 @@ export default function DashboardPage() {
                                     {republica.descricao || "Sem descrição disponível."}
                                 </p>
                                 
-                                <div className="mt-auto space-y-2">
+                                <div className="mt-auto space-y-2 mb-4">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-zinc-600">Vagas:</span>
                                         <span className="font-semibold text-zinc-900">{republica.vagas_disponiveis || 0}</span>
@@ -100,7 +116,14 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 
-                                <Button className="w-full mt-6">Ver Detalhes</Button>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" className="flex-1" size="sm">
+                                        <Edit className="w-4 h-4 mr-1" /> Editar
+                                    </Button>
+                                    <Button variant="destructive" size="sm">
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ))}
