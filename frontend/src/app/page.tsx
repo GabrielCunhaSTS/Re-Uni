@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Home, LogIn, UserPlus, Search, MapPin, LogOut, LayoutDashboard, Heart, SlidersHorizontal, User } from "lucide-react";
 import { RepublicaCard } from "@/components/home/RepublicaCard";
 import { MenuNotificacoes } from "./notificacoes/MenuNotificacoes";
+import { MapaGeral } from "@/components/home/MapaGeral";
 
 export default function HomePage() {
     const router = useRouter();
@@ -43,7 +44,6 @@ export default function HomePage() {
 
             const endpoint = `/republicas/buscar?${params.toString()}`;
             const response = await api.get(endpoint);
-            // O backend retorna { total, republicas }
             return Array.isArray(response.data) ? response.data : response.data.republicas || [];
         },
     });
@@ -130,7 +130,7 @@ export default function HomePage() {
                 </div>
             </header>
 
-            <section className="max-w-7xl mx-auto px-6 pt-12 pb-16">
+            <section className="max-w-7xl mx-auto px-6 pt-12 pb-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     <div className="lg:col-span-7 space-y-6">
                         <div className="border-l-4 border-blue-900 pl-4 py-1">
@@ -178,7 +178,6 @@ export default function HomePage() {
                         </Button>
                     </div>
 
-                    {/* PAINEL DE FILTROS DE PREÇO E NOME */}
                     {mostrarFiltros && (
                         <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
@@ -214,6 +213,15 @@ export default function HomePage() {
                         </div>
                     )}
                 </div>
+            </section>
+
+            {/* SEÇÃO DO MAPA INTERATIVO GERAL */}
+            <section className="max-w-7xl mx-auto px-6 mb-12">
+                <div className="mb-4 flex flex-col">
+                    <h3 className="text-xl font-extrabold text-blue-950">Explorar por Mapa</h3>
+                    <p className="text-sm text-slate-500">Visualize a localização exata de todas as repúblicas disponíveis.</p>
+                </div>
+                <MapaGeral />
             </section>
 
             <main className="max-w-7xl mx-auto px-6 pb-20">
