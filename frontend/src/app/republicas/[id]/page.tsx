@@ -15,6 +15,7 @@ import { RepublicaMapa } from "@/components/detalhes/RepublicaMapa";
 import { RepublicaSidebarAnunciante } from "@/components/detalhes/RepublicaSidebarAnunciante";
 import { RepublicaComentarios } from "@/components/RepublicaComentarios";
 import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
+import { EnviarComprovanteModal } from "@/components/estudante/EnviarComprovanteModal";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
@@ -40,6 +41,18 @@ export default function DetalhesRepublicaPage() {
             return response.data;
         },
         enabled: !!id,
+    });
+
+    const { data: aluguelAtivo } = useQuery({
+        queryKey: ["meu-aluguel-republica", id],
+        queryFn: async () => {
+            if (!token || !id) return null;
+            const response = await api.get("/alugueis/meus");
+            const aluguéis = Array.isArray(response.data) ? response.data : [];
+            
+            return aluguéis.find((a: any) => Number(a.id_republica) === Number(id) && a.status === "ativo") || null;
+        },
+        enabled: !!id && !!token,
     });
 
     const solicitarAluguelMutation = useMutation({
@@ -119,6 +132,10 @@ export default function DetalhesRepublicaPage() {
                             onSolicitar={() => solicitarAluguelMutation.mutate()}
                             idRepublica={Number(id)}
                         />
+
+                        {aluguelAtivo?.id_aluguel && (
+                            <EnviarComprovanteModal idAluguel={aluguelAtivo.id_aluguel} />
+                        )}
                     </div>
                 </div>
             </main>

@@ -5,6 +5,7 @@ import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, DollarSign, Home, Users, TrendingUp } from "lucide-react";
+import { GerenciarComprovantes } from "@/components/anunciante/GerenciarComprovantes";
 
 export default function DashboardFinanceiroPage() {
     const router = useRouter();
@@ -69,6 +70,7 @@ export default function DashboardFinanceiroPage() {
                     </div>
                 </div>
 
+                {/* DETALHAMENTO POR REPÚBLICA */}
                 <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
                     <h3 className="text-xl font-bold text-blue-950">Detalhamento por República</h3>
 
@@ -98,6 +100,16 @@ export default function DashboardFinanceiroPage() {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-blue-950">Aprovação de Pagamentos</h3>
+                    {financeiro?.detalhesImoveis?.map((imovel: any) => (
+                        <div key={`comp-${imovel.id_republica}`} className="space-y-2">
+                            <h4 className="text-sm font-bold text-slate-600">República: {imovel.nome}</h4>
+                            <GerenciarComprovantes idRepublica={imovel.id_republica} />
+                        </div>
+                    ))}
                 </div>
             </main>
         </div>
