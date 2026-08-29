@@ -15,6 +15,8 @@ import Avaliacao from "./Avaliacao.js";
 import Notificacao from "./Notificacao.js";
 import { Mensagem } from "./Mensagem.js";
 import { Comprovante } from "./Comprovante.js";
+import { Manutencao } from "./Manutencao.js";
+
 Usuario.hasMany(Republica, {
     foreignKey: "id_usuario",
     as: "republicas"
@@ -209,6 +211,27 @@ Comprovante.belongsTo(Usuario, {
     foreignKey: "id_estudante",
     as: "estudante"
 });
+
+
+Republica.hasMany(Manutencao, {
+    foreignKey: "id_republica",
+    as: "manutencoes"
+});
+Manutencao.belongsTo(Republica, {
+    foreignKey: "id_republica",
+    as: "republica"
+});
+
+Usuario.hasMany(Manutencao, {
+    foreignKey: "id_usuario",
+    as: "manutencoes"
+});
+Manutencao.belongsTo(Usuario, {
+    foreignKey: "id_usuario",
+    as: "usuario"
+});
+
+
 export {
     Usuario,
     Estado,
@@ -226,5 +249,6 @@ export {
     Avaliacao,
     Notificacao,
     Mensagem,
-    Comprovante
+    Comprovante,
+    Manutencao
 };

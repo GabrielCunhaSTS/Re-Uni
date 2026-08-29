@@ -70,9 +70,13 @@ export function FormImagens({
                     <input
                         type="file"
                         multiple
-                        accept="image}
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+                </label>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
-                {}
                 {imagensExistentes.map((img, index) => (
                     <div
                         key={`existente-${index}`}
@@ -83,7 +87,6 @@ export function FormImagens({
                         className="relative group h-36 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm cursor-grab active:cursor-grabbing"
                     >
                         <img src={formatarUrl(img.url)} alt="Foto" className="w-full h-full object-cover" />
-                        {}
                         {index === 0 && (
                             <span className="absolute top-2 left-2 bg-blue-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow">
                                 <Star className="w-3 h-3 fill-current" /> Capa
@@ -104,7 +107,6 @@ export function FormImagens({
                         </div>
                     </div>
                 ))}
-                {}
                 {novosArquivos.map((file, index) => {
                     const previewUrl = URL.createObjectURL(file);
                     const isPrimeiraCapa = imagensExistentes.length === 0 && index === 0;
