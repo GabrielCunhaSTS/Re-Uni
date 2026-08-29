@@ -52,6 +52,6 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", avaliacaoRoutes);
 app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/api", mensagemRoutes);
-app.use(comprovanteRoutes);
+app.use("/api", comprovanteRoutes);
 
 export default app;

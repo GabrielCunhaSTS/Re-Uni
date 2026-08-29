@@ -20,8 +20,13 @@ export const Comprovante = sequelize.define("Comprovante", {
         allowNull: false,
     },
     mes_referencia: {
-        type: DataTypes.STRING, 
+        type: DataTypes.STRING,
         allowNull: false,
+    },
+    valor: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.00
     },
     status: {
         type: DataTypes.ENUM("pendente", "aprovado", "rejeitado"),
