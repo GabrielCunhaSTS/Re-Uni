@@ -13,6 +13,8 @@ import Aluguel from "./Aluguel.js";
 import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
 import Avaliacao from "./Avaliacao.js";
 import Notificacao from "./Notificacao.js";
+import { Mensagem } from "./Mensagem.js";
+
 
 
 Usuario.hasMany(Republica, {
@@ -219,6 +221,34 @@ Notificacao.belongsTo(Usuario, { foreignKey: "id_usuario", as: "usuario" });
 Usuario.hasMany(Notificacao, { foreignKey: "id_usuario", as: "notificacoes" });
 
 
+Usuario.hasMany(Mensagem, {
+    foreignKey: "id_remetente",
+    as: "mensagensEnviadas"
+});
+Mensagem.belongsTo(Usuario, {
+    foreignKey: "id_remetente",
+    as: "remetente"
+});
+
+Usuario.hasMany(Mensagem, {
+    foreignKey: "id_destinatario",
+    as: "mensagensRecebidas"
+});
+Mensagem.belongsTo(Usuario, {
+    foreignKey: "id_destinatario",
+    as: "destinatario"
+});
+
+Republica.hasMany(Mensagem, {
+    foreignKey: "id_republica",
+    as: "mensagens"
+});
+Mensagem.belongsTo(Republica, {
+    foreignKey: "id_republica",
+    as: "republica"
+});
+
+
 export {
     Usuario,
     Estado,
@@ -234,5 +264,6 @@ export {
     Aluguel,
     ConfiguracaoUsuario,
     Avaliacao,
-    Notificacao
+    Notificacao,
+    Mensagem
 };

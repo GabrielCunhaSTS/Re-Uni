@@ -13,6 +13,7 @@ import aluguelRoutes from "./routes/aluguelRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import avaliacaoRoutes from "./routes/avaliacaoRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
+import mensagemRoutes from "./routes/mensagemRoutes.js"; 
 
 const app = express();
 
@@ -49,5 +50,6 @@ app.use("/api", aluguelRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", avaliacaoRoutes);
 app.use("/api/notificacoes", notificacaoRoutes);
+app.use("/api", mensagemRoutes);
 
 export default app;
