@@ -14,6 +14,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import avaliacaoRoutes from "./routes/avaliacaoRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import mensagemRoutes from "./routes/mensagemRoutes.js"; 
+import comprovanteRoutes from "./routes/comprovanteRoutes.js";
 
 const app = express();
 
@@ -51,5 +52,6 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", avaliacaoRoutes);
 app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/api", mensagemRoutes);
+app.use(comprovanteRoutes);
 
 export default app;

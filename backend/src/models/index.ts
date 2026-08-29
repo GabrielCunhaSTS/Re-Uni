@@ -14,6 +14,7 @@ import ConfiguracaoUsuario from "./ConfiguracaoUsuario.js";
 import Avaliacao from "./Avaliacao.js";
 import Notificacao from "./Notificacao.js";
 import { Mensagem } from "./Mensagem.js";
+import { Comprovante } from "./Comprovante.js";
 
 
 
@@ -248,6 +249,23 @@ Mensagem.belongsTo(Republica, {
     as: "republica"
 });
 
+Aluguel.hasMany(Comprovante, {
+    foreignKey: "id_aluguel",
+    as: "comprovantes"
+});
+Comprovante.belongsTo(Aluguel, {
+    foreignKey: "id_aluguel",
+    as: "aluguel"
+});
+
+Usuario.hasMany(Comprovante, {
+    foreignKey: "id_estudante",
+    as: "comprovantesEnviados"
+});
+Comprovante.belongsTo(Usuario, {
+    foreignKey: "id_estudante",
+    as: "estudante"
+});
 
 export {
     Usuario,
@@ -265,5 +283,6 @@ export {
     ConfiguracaoUsuario,
     Avaliacao,
     Notificacao,
-    Mensagem
+    Mensagem,
+    Comprovante
 };
