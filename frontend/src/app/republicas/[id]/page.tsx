@@ -117,6 +117,7 @@ export default function DetalhesRepublicaPage() {
                             vagasDisponiveis={republica.vagas_disponiveis}
                             isPending={solicitarAluguelMutation.isPending}
                             onSolicitar={() => solicitarAluguelMutation.mutate()}
+                            idRepublica={Number(id)}
                         />
                     </div>
                 </div>
