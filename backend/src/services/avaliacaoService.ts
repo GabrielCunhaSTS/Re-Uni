@@ -19,9 +19,21 @@ export const criarAvaliacaoService = async (id_usuario: number, id_republica: nu
 };
 
 export const listarAvaliacoesDaRepublicaService = async (id_republica: number) => {
-    return await Avaliacao.findAll({
+    const avaliacoes = await Avaliacao.findAll({
         where: { id_republica },
         include: [{ model: Usuario, as: "usuario", attributes: ["nome", "foto"] }],
         order: [["criado_em", "DESC"]]
     });
+
+    let media = 0;
+    if (avaliacoes.length > 0) {
+        const soma = avaliacoes.reduce((acc: number, av: any) => acc + av.nota, 0);
+        media = Number((soma / avaliacoes.length).toFixed(1));
+    }
+
+    return {
+        media,
+        total: avaliacoes.length,
+        avaliacoes
+    };
 };

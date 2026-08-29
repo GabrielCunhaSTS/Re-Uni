@@ -18,3 +18,10 @@ export const marcarComoLidaService = async (id_notificacao: number, id_usuario: 
     await notificacao.update({ lida: true });
     return notificacao;
 };
+
+export const marcarTodasComoLidasService = async (id_usuario: number) => {
+    return await Notificacao.update(
+        { lida: true },
+        { where: { id_usuario, lida: false } }
+    );
+};

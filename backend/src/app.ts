@@ -48,6 +48,6 @@ app.use("/api", configuracaoRoutes);
 app.use("/api", aluguelRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api", avaliacaoRoutes);
-app.use("/api", notificacaoRoutes);
+app.use("/api/notificacoes", notificacaoRoutes);
 
 export default app;
