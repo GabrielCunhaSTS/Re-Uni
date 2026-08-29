@@ -1,6 +1,5 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
-
 class Avaliacao extends Model {
     declare id_avaliacao: number;
     declare id_usuario: number;
@@ -10,7 +9,6 @@ class Avaliacao extends Model {
     declare criado_em: Date;
     declare atualizado_em: Date;
 }
-
 Avaliacao.init(
     {
         id_avaliacao: {
@@ -47,5 +45,4 @@ Avaliacao.init(
         updatedAt: "atualizado_em"
     }
 );
-
 export default Avaliacao;

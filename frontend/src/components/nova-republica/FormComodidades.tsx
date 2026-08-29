@@ -1,15 +1,12 @@
 "use client";
-
 interface FormComodidadesProps {
     form: any;
     setForm: (form: any) => void;
 }
-
 export function FormComodidades({ form, setForm }: FormComodidadesProps) {
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-bold text-blue-950 border-b border-slate-100 pb-2">Comodidades & Estrutura</h3>
-            
             <div className="grid grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Quartos</label>
@@ -24,7 +21,6 @@ export function FormComodidades({ form, setForm }: FormComodidadesProps) {
                     <input type="number" value={form.moradores} onChange={(e) => setForm({...form, moradores: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm" />
                 </div>
             </div>
-
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer">
                     <input type="checkbox" checked={form.mobiliada} onChange={(e) => setForm({...form, mobiliada: e.target.checked})} className="rounded text-blue-900 w-4 h-4" /> Mobiliada

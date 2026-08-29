@@ -1,19 +1,16 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface ConfiguracaoUsuarioAttributes {
     id_usuario: number;
     tema: "claro" | "escuro" | "sistema";
     idioma: "pt-BR" | "en" | "ko" | "ja" | "de";
 }
-
 interface ConfiguracaoUsuarioCreationAttributes
     extends Optional<ConfiguracaoUsuarioAttributes, "tema" | "idioma"> {}
-
 class ConfiguracaoUsuario
     extends Model<
         ConfiguracaoUsuarioAttributes,
-        ConfiguracaoUsuarioCreationAttributes 
+        ConfiguracaoUsuarioCreationAttributes
     >
     implements ConfiguracaoUsuarioAttributes
 {
@@ -21,14 +18,12 @@ class ConfiguracaoUsuario
     declare tema: "claro" | "escuro" | "sistema";
     declare idioma: "pt-BR" | "en" | "ko" | "ja" | "de";
 }
-
 ConfiguracaoUsuario.init(
     {
         id_usuario: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
-
         tema: {
             type: DataTypes.ENUM(
                 "claro",
@@ -37,7 +32,6 @@ ConfiguracaoUsuario.init(
             ),
             defaultValue: "sistema"
         },
-
         idioma: {
             type: DataTypes.ENUM(
                 "pt-BR",
@@ -56,5 +50,4 @@ ConfiguracaoUsuario.init(
         timestamps: false
     }
 );
-
 export default ConfiguracaoUsuario;

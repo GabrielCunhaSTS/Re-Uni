@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,21 +6,17 @@ import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-
 import { FormInformacoesBasicas } from "@/components/nova-republica/FormInformacoesBasicas";
 import { FormLocalizacao } from "@/components/nova-republica/FormLocalizacao";
 import { FormComodidades } from "@/components/nova-republica/FormComodidades";
 import { FormImagens } from "@/components/nova-republica/FormImagens";
-
 export default function EditarRepublicaPage() {
     const router = useRouter();
     const params = useParams();
     const id = params?.id;
     const queryClient = useQueryClient();
-
     const [imagensExistentes, setImagensExistentes] = useState<{ id_imagem?: number; url: string }[]>([]);
     const [novosArquivos, setNovosArquivos] = useState<File[]>([]);
-
     const [form, setForm] = useState({
         nome: "",
         descricao: "",
@@ -46,7 +41,6 @@ export default function EditarRepublicaPage() {
         possui_area_lazer: false,
         aceita_pets: false,
     });
-
     const { data: republica, isLoading } = useQuery({
         queryKey: ["republica-editar", id],
         queryFn: async () => {
@@ -56,7 +50,6 @@ export default function EditarRepublicaPage() {
         },
         enabled: !!id,
     });
-
     useEffect(() => {
         if (republica) {
             setForm({
@@ -83,7 +76,6 @@ export default function EditarRepublicaPage() {
                 possui_area_lazer: !!republica.dados?.possui_area_lazer,
                 aceita_pets: !!republica.dados?.aceita_pets,
             });
-
             if (republica.imagens && Array.isArray(republica.imagens)) {
                 setImagensExistentes(republica.imagens.map((img: any) => ({
                     id_imagem: img.id_imagem || img.id,
@@ -92,15 +84,12 @@ export default function EditarRepublicaPage() {
             }
         }
     }, [republica]);
-
     async function handleCepBlur(e: React.FocusEvent<HTMLInputElement>) {
         const cepLimpo = e.target.value.replace(/\D/g, "");
         if (cepLimpo.length !== 8) return;
-
         try {
             const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
             const data = await res.json();
-
             if (!data.erro) {
                 setForm((prev) => ({
                     ...prev,
@@ -113,7 +102,6 @@ export default function EditarRepublicaPage() {
             console.error("Erro ao buscar CEP:", error);
         }
     }
-
     async function handleDeletarImagemExistente(id_imagem: number) {
         try {
             await api.delete(`/republicas/${id}/imagens/${id_imagem}`);
@@ -122,17 +110,14 @@ export default function EditarRepublicaPage() {
             toast.error("Erro ao remover imagem do servidor.");
         }
     }
-
     const atualizarMutation = useMutation({
         mutationFn: async () => {
             let latitude = republica?.localizacao?.latitude || -23.9608;
             let longitude = republica?.localizacao?.longitude || -46.3336;
-
             try {
                 const queryGeo = encodeURIComponent(`${form.endereco}, ${form.numero} - ${form.bairro}, ${form.cidade}, Brasil`);
                 const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryGeo}`);
                 const dataGeo = await resGeo.json();
-
                 if (dataGeo && dataGeo.length > 0) {
                     latitude = parseFloat(dataGeo[0].lat);
                     longitude = parseFloat(dataGeo[0].lon);
@@ -140,7 +125,6 @@ export default function EditarRepublicaPage() {
             } catch (err) {
                 console.warn("Mantendo coordenadas anteriores.", err);
             }
-
             const payload = {
                 nome: form.nome.trim(),
                 descricao: form.descricao?.trim() || "",
@@ -170,31 +154,24 @@ export default function EditarRepublicaPage() {
                     possui_area_lazer: Boolean(form.possui_area_lazer),
                     aceita_pets: Boolean(form.aceita_pets),
                 },
-                // Envia a nova ordem das imagens existentes para o backend atualizar ordens/capa
                 imagens_ordem: imagensExistentes.map((img, index) => ({
                     id_imagem: img.id_imagem,
                     ordem: index,
                     principal: index === 0
                 }))
             };
-
-            // Atualiza os dados principais e a ordem das imagens existentes
             await api.put(`/republicas/${id}`, payload);
-
-            // Envia novos arquivos adicionados, se houver
             if (novosArquivos.length > 0) {
                 const formData = new FormData();
                 novosArquivos.forEach((file) => {
                     formData.append("imagens", file);
                 });
-
                 await api.post(`/republicas/${id}/imagens`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
                 });
             }
-
             return true;
         },
         onSuccess: () => {
@@ -202,7 +179,6 @@ export default function EditarRepublicaPage() {
             queryClient.invalidateQueries({ queryKey: ["republicas-publicas"] });
             queryClient.invalidateQueries({ queryKey: ["estatisticas-dashboard"] });
             queryClient.invalidateQueries({ queryKey: ["republica-detalhe", id] });
-
             toast.success("República atualizada com sucesso!");
             router.push("/dashboard");
         },
@@ -211,7 +187,6 @@ export default function EditarRepublicaPage() {
             toast.error(mensagemErro);
         }
     });
-
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -219,7 +194,6 @@ export default function EditarRepublicaPage() {
             </div>
         );
     }
-
     return (
         <div className="min-h-screen bg-slate-50/60 pb-20 text-slate-900">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
@@ -230,21 +204,18 @@ export default function EditarRepublicaPage() {
                     <h1 className="text-xl font-extrabold text-blue-950">Editar República</h1>
                 </div>
             </header>
-
             <main className="max-w-3xl mx-auto px-6 pt-8">
                 <form onSubmit={(e) => { e.preventDefault(); atualizarMutation.mutate(); }} className="space-y-8 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                     <FormInformacoesBasicas form={form} setForm={setForm} />
                     <FormLocalizacao form={form} setForm={setForm} onCepBlur={handleCepBlur} />
                     <FormComodidades form={form} setForm={setForm} />
-                    
-                    <FormImagens 
+                    <FormImagens
                         imagensExistentes={imagensExistentes}
                         setImagensExistentes={setImagensExistentes}
                         novosArquivos={novosArquivos}
                         setNovosArquivos={setNovosArquivos}
                         onDeletarExistente={handleDeletarImagemExistente}
                     />
-
                     <Button type="submit" disabled={atualizarMutation.isPending} className="w-full bg-blue-900 hover:bg-blue-800 text-white py-6 rounded-2xl font-bold shadow-md">
                         {atualizarMutation.isPending ? "Salvando alterações..." : "Salvar Alterações"}
                     </Button>

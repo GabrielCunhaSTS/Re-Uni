@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
@@ -7,16 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, MessageSquare, Home } from "lucide-react";
-
 export default function DashboardMensagensPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
-
     const [republicaSelecionada, setRepublicaSelecionada] = useState<any>(null);
     const [estudanteSelecionado, setEstudanteSelecionado] = useState<any>(null);
     const [conteudo, setConteudo] = useState("");
     const [myId, setMyId] = useState<number | null>(null);
-
     useEffect(() => {
         const userStr = localStorage.getItem("@ReUni:user");
         if (userStr) {
@@ -28,8 +24,6 @@ export default function DashboardMensagensPage() {
             }
         }
     }, []);
-
-    // Busca as repúblicas do anunciante
     const { data: republicas = [] } = useQuery({
         queryKey: ["dashboard-republicas-chat"],
         queryFn: async () => {
@@ -37,8 +31,6 @@ export default function DashboardMensagensPage() {
             return response.data.republicas || [];
         }
     });
-
-    // Busca os estudantes que mandaram mensagem para a república selecionada
     const idRepAtual = republicaSelecionada?.id_republica || republicaSelecionada?.id;
     const { data: contatos = [] } = useQuery({
         queryKey: ["republica-contatos-chat", idRepAtual],
@@ -48,8 +40,6 @@ export default function DashboardMensagensPage() {
         },
         enabled: !!idRepAtual
     });
-
-    // Busca as mensagens da conversa ativa
     const { data: mensagens = [] } = useQuery({
         queryKey: ["mensagens-anunciante", idRepAtual, estudanteSelecionado?.id_usuario],
         queryFn: async () => {
@@ -59,7 +49,6 @@ export default function DashboardMensagensPage() {
         enabled: !!idRepAtual && !!estudanteSelecionado,
         refetchInterval: 3000,
     });
-
     const enviarMutation = useMutation({
         mutationFn: async (texto: string) => {
             await api.post("/mensagens", {
@@ -73,13 +62,11 @@ export default function DashboardMensagensPage() {
             queryClient.invalidateQueries({ queryKey: ["mensagens-anunciante"] });
         },
     });
-
     function handleEnviar(e: React.FormEvent) {
         e.preventDefault();
         if (!conteudo.trim()) return;
         enviarMutation.mutate(conteudo);
     }
-
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -95,7 +82,6 @@ export default function DashboardMensagensPage() {
                     </div>
                 </div>
             </header>
-
             <main className="max-w-6xl mx-auto px-6 pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 h-[75vh]">
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm overflow-y-auto space-y-4">
                     <h3 className="font-bold text-blue-950 text-sm uppercase tracking-wider">Suas Repúblicas</h3>
@@ -103,7 +89,7 @@ export default function DashboardMensagensPage() {
                         const repId = rep.id_republica || rep.id;
                         const isSelected = idRepAtual === repId;
                         return (
-                            <div 
+                            <div
                                 key={repId}
                                 onClick={() => { setRepublicaSelecionada(rep); setEstudanteSelecionado(null); }}
                                 className={`p-3 rounded-2xl cursor-pointer border transition-all ${isSelected ? 'bg-blue-50 border-blue-200 font-bold text-blue-950' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
@@ -112,7 +98,6 @@ export default function DashboardMensagensPage() {
                             </div>
                         );
                     })}
-
                     {republicaSelecionada && (
                         <div className="pt-4 border-t border-slate-100 space-y-3">
                             <h3 className="font-bold text-blue-950 text-sm uppercase tracking-wider">Interessados (Mensagens)</h3>
@@ -122,7 +107,7 @@ export default function DashboardMensagensPage() {
                                 contatos.map((estudante: any) => {
                                     const isSelected = estudanteSelecionado?.id_usuario === estudante.id_usuario;
                                     return (
-                                        <div 
+                                        <div
                                             key={estudante.id_usuario}
                                             onClick={() => setEstudanteSelecionado(estudante)}
                                             className={`p-3 rounded-2xl cursor-pointer border transition-all ${isSelected ? 'bg-blue-900 text-white font-bold' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
@@ -136,7 +121,6 @@ export default function DashboardMensagensPage() {
                         </div>
                     )}
                 </div>
-
                 <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
                     {!estudanteSelecionado ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 space-y-2">
@@ -151,10 +135,8 @@ export default function DashboardMensagensPage() {
                                     <span className="text-xs text-slate-400">Conversando sobre: {republicaSelecionada.nome}</span>
                                 </div>
                             </div>
-
                             <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                                 {mensagens.map((msg: any) => {
-                                    // Se o remetente for o anunciante logado (myId), joga para a direita. Senão, esquerda.
                                     const isMe = msg.id_remetente === myId;
                                     return (
                                         <div key={msg.id_mensagem} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -165,12 +147,11 @@ export default function DashboardMensagensPage() {
                                     );
                                 })}
                             </div>
-
                             <form onSubmit={handleEnviar} className="mt-4 flex gap-2 pt-3 border-t border-slate-100">
-                                <Input 
-                                    value={conteudo} 
-                                    onChange={(e) => setConteudo(e.target.value)} 
-                                    placeholder="Digite sua resposta..." 
+                                <Input
+                                    value={conteudo}
+                                    onChange={(e) => setConteudo(e.target.value)}
+                                    placeholder="Digite sua resposta..."
                                     className="rounded-xl bg-slate-50 border-slate-200"
                                 />
                                 <Button type="submit" className="bg-blue-900 hover:bg-blue-800 rounded-xl px-5">

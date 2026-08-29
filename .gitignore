@@ -27,3 +27,6 @@ postman/
 
 # Uploads
 uploads/
+
+# Script de limpeza local
+strip-all.js

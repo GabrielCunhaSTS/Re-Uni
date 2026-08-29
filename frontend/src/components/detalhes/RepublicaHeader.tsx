@@ -1,14 +1,10 @@
 "use client";
-
 import { MapPin } from "lucide-react";
-
 interface RepublicaHeaderProps {
     republica: any;
 }
-
 export function RepublicaHeader({ republica }: RepublicaHeaderProps) {
     const loc = republica.localizacao;
-
     return (
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -23,7 +19,6 @@ export function RepublicaHeader({ republica }: RepublicaHeaderProps) {
                     </p>
                 )}
             </div>
-
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-end min-w-[220px]">
                 <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Valor Mensal</span>
                 <span className="text-3xl font-extrabold text-emerald-600 my-1">

@@ -1,15 +1,12 @@
 "use client";
-
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, DollarSign, Home, Users, TrendingUp } from "lucide-react";
 import { GerenciarComprovantes } from "@/components/anunciante/GerenciarComprovantes";
-
 export default function DashboardFinanceiroPage() {
     const router = useRouter();
-
     const { data: financeiro, isLoading } = useQuery({
         queryKey: ["dashboard-financeiro"],
         queryFn: async () => {
@@ -17,7 +14,6 @@ export default function DashboardFinanceiroPage() {
             return response.data;
         }
     });
-
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -25,7 +21,6 @@ export default function DashboardFinanceiroPage() {
             </div>
         );
     }
-
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -41,9 +36,8 @@ export default function DashboardFinanceiroPage() {
                     </div>
                 </div>
             </header>
-
             <main className="max-w-6xl mx-auto px-6 pt-10 space-y-8">
-                {/* CARDS DE RESUMO */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex items-center gap-4">
                         <div className="bg-emerald-100 text-emerald-800 p-4 rounded-2xl">
@@ -56,7 +50,6 @@ export default function DashboardFinanceiroPage() {
                             </h2>
                         </div>
                     </div>
-
                     <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex items-center gap-4">
                         <div className="bg-blue-100 text-blue-800 p-4 rounded-2xl">
                             <TrendingUp className="w-8 h-8" />
@@ -69,11 +62,9 @@ export default function DashboardFinanceiroPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* DETALHAMENTO POR REPÚBLICA */}
+                {}
                 <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
                     <h3 className="text-xl font-bold text-blue-950">Detalhamento por República</h3>
-
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -101,7 +92,6 @@ export default function DashboardFinanceiroPage() {
                         </table>
                     </div>
                 </div>
-
                 <div className="space-y-6">
                     <h3 className="text-xl font-bold text-blue-950">Aprovação de Pagamentos</h3>
                     {financeiro?.detalhesImoveis?.map((imovel: any) => (

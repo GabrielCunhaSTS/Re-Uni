@@ -1,6 +1,5 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
-
 class Notificacao extends Model {
     declare id_notificacao: number;
     declare id_usuario: number;
@@ -9,7 +8,6 @@ class Notificacao extends Model {
     declare lida: boolean;
     declare criado_em: Date;
 }
-
 Notificacao.init(
     {
         id_notificacao: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -26,5 +24,4 @@ Notificacao.init(
         updatedAt: false
     }
 );
-
 export default Notificacao;

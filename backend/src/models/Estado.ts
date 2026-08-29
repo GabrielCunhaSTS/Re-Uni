@@ -1,12 +1,10 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface EstadoAttributes {
     id_estado: number;
     nome: string;
     uf: string;
 }
-
 class Estado
     extends Model<EstadoAttributes>
     implements EstadoAttributes
@@ -15,7 +13,6 @@ class Estado
     declare nome: string;
     declare uf: string;
 }
-
 Estado.init(
     {
         id_estado: {
@@ -23,12 +20,10 @@ Estado.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         nome: {
             type: DataTypes.STRING(100),
             allowNull: false
         },
-
         uf: {
             type: DataTypes.CHAR(2),
             allowNull: false,
@@ -42,5 +37,4 @@ Estado.init(
         timestamps: false
     }
 );
-
 export default Estado;

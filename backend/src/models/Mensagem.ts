@@ -1,7 +1,5 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database.js";
-
-
 export class Mensagem extends Model {
     public id_mensagem!: number;
     public id_remetente!: number;
@@ -11,7 +9,6 @@ export class Mensagem extends Model {
     public lido!: boolean;
     public readonly criado_em!: Date;
 }
-
 Mensagem.init(
     {
         id_mensagem: {

@@ -1,6 +1,5 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface RespostaComentarioAttributes {
     id_resposta: number;
     id_comentario: number;
@@ -9,7 +8,6 @@ interface RespostaComentarioAttributes {
     criado_em: Date;
     atualizado_em: Date;
 }
-
 interface RespostaComentarioCreationAttributes
     extends Optional<
         RespostaComentarioAttributes,
@@ -17,7 +15,6 @@ interface RespostaComentarioCreationAttributes
         | "criado_em"
         | "atualizado_em"
     > {}
-
 class RespostaComentario
     extends Model<
         RespostaComentarioAttributes,
@@ -32,7 +29,6 @@ class RespostaComentario
     declare criado_em: Date;
     declare atualizado_em: Date;
 }
-
 RespostaComentario.init(
     {
         id_resposta: {
@@ -40,27 +36,22 @@ RespostaComentario.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         id_comentario: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         id_usuario: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         texto: {
             type: DataTypes.TEXT,
             allowNull: false
         },
-
         criado_em: {
             type: DataTypes.DATE,
             allowNull: false
         },
-
         atualizado_em: {
             type: DataTypes.DATE,
             allowNull: false
@@ -75,5 +66,4 @@ RespostaComentario.init(
         updatedAt: "atualizado_em"
     }
 );
-
 export default RespostaComentario;

@@ -1,12 +1,9 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
 export function NovaRepublicaHeader() {
     const router = useRouter();
-
     return (
         <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50">
             <div className="flex items-center gap-4">

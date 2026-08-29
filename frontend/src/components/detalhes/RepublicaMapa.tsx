@@ -1,14 +1,10 @@
 "use client";
-
 import { MapPin } from "lucide-react";
-
 interface RepublicaMapaProps {
     localizacao: any;
 }
-
 export function RepublicaMapa({ localizacao }: RepublicaMapaProps) {
     if (!localizacao) return null;
-
     return (
         <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-xl font-bold text-blue-950 flex items-center gap-2">

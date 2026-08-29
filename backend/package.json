@@ -10,11 +10,6 @@
     "start": "node dist/server.js",
     "prepare": "husky"
   },
-  "lint-staged": {
-    "src/**/*.{ts,js}": [
-      "node strip-comments.js"
-    ]
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",

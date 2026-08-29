@@ -1,28 +1,23 @@
 "use client";
-
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart } from "lucide-react";
 import { RepublicaCard } from "@/components/home/RepublicaCard";
-
 export default function FavoritosPage() {
     const router = useRouter();
-
     const { data: favoritos, isLoading } = useQuery({
         queryKey: ["minhas-republicas-favoritas"],
         queryFn: async () => {
             const response = await api.get("/favoritos");
             return response.data;
         },
-        refetchOnMount: "always", // <--- FORÇA O REFRESH TODA VEZ QUE A TELA FOR ABERTA
+        refetchOnMount: "always",
     });
-
     function handleVerDetalhes(idRepublica: number) {
         router.push(`/republicas/${idRepublica}`);
     }
-
     return (
         <div className="min-h-screen bg-slate-50/50 text-slate-900">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
@@ -35,7 +30,6 @@ export default function FavoritosPage() {
                     </h1>
                 </div>
             </header>
-
             <main className="max-w-7xl mx-auto px-6 py-12">
                 {isLoading && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -44,7 +38,6 @@ export default function FavoritosPage() {
                         ))}
                     </div>
                 )}
-
                 {!isLoading && favoritos?.length === 0 && (
                     <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center space-y-4 max-w-lg mx-auto">
                         <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-red-500">
@@ -57,13 +50,12 @@ export default function FavoritosPage() {
                         </Button>
                     </div>
                 )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {favoritos?.map((republica: any) => (
-                        <RepublicaCard 
-                            key={republica.id_republica || republica.id} 
-                            republica={republica} 
-                            onVerDetalhes={handleVerDetalhes} 
+                        <RepublicaCard
+                            key={republica.id_republica || republica.id}
+                            republica={republica}
+                            onVerDetalhes={handleVerDetalhes}
                             favoritoInicial={true}
                         />
                     ))}

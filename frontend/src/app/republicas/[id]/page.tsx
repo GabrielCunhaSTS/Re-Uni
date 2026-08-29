@@ -1,5 +1,4 @@
 "use client";
-
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
@@ -7,7 +6,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
 import { RepublicaSobreComodidades } from "@/components/detalhes/RepublicaSobreComodidades";
@@ -16,14 +14,11 @@ import { RepublicaSidebarAnunciante } from "@/components/detalhes/RepublicaSideb
 import { RepublicaComentarios } from "@/components/RepublicaComentarios";
 import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
 import { EnviarComprovanteModal } from "@/components/estudante/EnviarComprovanteModal";
-
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
     const params = useParams();
     const id = params?.id;
-
     const [token, setToken] = useState<string | null>(null);
-
     useEffect(() => {
         const storedToken = localStorage.getItem("@ReUni:token");
         if (!storedToken) {
@@ -32,7 +27,6 @@ export default function DetalhesRepublicaPage() {
             setToken(storedToken);
         }
     }, [router]);
-
     const { data: republica, isLoading, isError } = useQuery({
         queryKey: ["republica-detalhe", id],
         queryFn: async () => {
@@ -42,19 +36,16 @@ export default function DetalhesRepublicaPage() {
         },
         enabled: !!id,
     });
-
     const { data: aluguelAtivo } = useQuery({
         queryKey: ["meu-aluguel-republica", id],
         queryFn: async () => {
             if (!token || !id) return null;
             const response = await api.get("/alugueis/meus");
             const aluguéis = Array.isArray(response.data) ? response.data : [];
-            
             return aluguéis.find((a: any) => Number(a.id_republica) === Number(id) && a.status === "ativo") || null;
         },
         enabled: !!id && !!token,
     });
-
     const solicitarAluguelMutation = useMutation({
         mutationFn: async () => {
             const response = await api.post(`/republicas/${id}/alugueis`, {
@@ -70,7 +61,6 @@ export default function DetalhesRepublicaPage() {
             toast.error(mensagem);
         }
     });
-
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -78,7 +68,6 @@ export default function DetalhesRepublicaPage() {
             </div>
         );
     }
-
     if (isError || !republica) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
@@ -89,9 +78,7 @@ export default function DetalhesRepublicaPage() {
             </div>
         );
     }
-
     const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
-
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -107,32 +94,24 @@ export default function DetalhesRepublicaPage() {
                     </div>
                 </div>
             </header>
-
             <main className="max-w-5xl mx-auto px-6 pt-8 space-y-8">
                 <RepublicaHeader republica={republica} />
-
                 <RepublicaImagens republica={republica} />
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
                         <RepublicaSobreComodidades republica={republica} />
-
                         <RepublicaMapa localizacao={republica.localizacao} />
-
                         {id && <RepublicaComentarios idRepublica={idRepublicaStr} />}
-
                         {id && <SecaoAvaliacoes idRepublica={idRepublicaStr} />}
                     </div>
-
                     <div className="space-y-6">
-                        <RepublicaSidebarAnunciante 
-                            anunciante={republica.anunciante} 
+                        <RepublicaSidebarAnunciante
+                            anunciante={republica.anunciante}
                             vagasDisponiveis={republica.vagas_disponiveis}
                             isPending={solicitarAluguelMutation.isPending}
                             onSolicitar={() => solicitarAluguelMutation.mutate()}
                             idRepublica={Number(id)}
                         />
-
                         {aluguelAtivo?.id_aluguel && (
                             <EnviarComprovanteModal idAluguel={aluguelAtivo.id_aluguel} />
                         )}

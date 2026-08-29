@@ -1,1 +1,7 @@
-cd backend && npx lint-staged
+#!/usr/bin/env sh
+
+# Executa o script unificado de limpeza em todo o projeto
+node strip-all.js
+
+# Re-adiciona as alterações limpas ao stage do git
+git add frontend/src backend/src

@@ -1,13 +1,11 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface ImagemRepublicaAttributes {
     id_republica: number;
     id_imagem: number;
     principal: boolean;
     ordem: number;
 }
-
 class ImagemRepublica
     extends Model<ImagemRepublicaAttributes>
     implements ImagemRepublicaAttributes
@@ -17,24 +15,20 @@ class ImagemRepublica
     declare principal: boolean;
     declare ordem: number;
 }
-
 ImagemRepublica.init(
     {
         id_republica: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
-
         id_imagem: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
-
         principal: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         ordem: {
             type: DataTypes.INTEGER,
             defaultValue: 0
@@ -47,5 +41,4 @@ ImagemRepublica.init(
         timestamps: false
     }
 );
-
 export default ImagemRepublica;

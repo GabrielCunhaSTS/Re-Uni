@@ -1,12 +1,10 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface TipoRepublicaAttributes {
     id_tipo_republica: number;
     nome: string;
     descricao: string | null;
 }
-
 class TipoRepublica
     extends Model<TipoRepublicaAttributes>
     implements TipoRepublicaAttributes
@@ -15,7 +13,6 @@ class TipoRepublica
     declare nome: string;
     declare descricao: string | null;
 }
-
 TipoRepublica.init(
     {
         id_tipo_republica: {
@@ -23,13 +20,11 @@ TipoRepublica.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         nome: {
             type: DataTypes.STRING(100),
             allowNull: false,
             unique: true
         },
-
         descricao: {
             type: DataTypes.STRING(255),
             allowNull: true
@@ -42,5 +37,4 @@ TipoRepublica.init(
         timestamps: false
     }
 );
-
 export default TipoRepublica;

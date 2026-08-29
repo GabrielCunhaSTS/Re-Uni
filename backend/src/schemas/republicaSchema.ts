@@ -1,6 +1,4 @@
 import { z } from 'zod';
-
-
 const localizacaoSchema = z.object({
   cep: z.string().max(9).optional().nullable(),
   endereco: z.string().max(200).optional().nullable(),
@@ -12,9 +10,6 @@ const localizacaoSchema = z.object({
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable()
 });
-
-
-
 const dadosSchema = z.object({
   quartos: z.number().int().min(0).optional(),
   banheiros: z.number().int().min(0).optional(),
@@ -26,8 +21,6 @@ const dadosSchema = z.object({
   possui_area_lazer: z.boolean().optional(),
   aceita_pets: z.boolean().optional()
 });
-
-
 const baseRepublicaSchema = z.object({
   id_tipo_republica: z.number().int().positive('Tipo de república é obrigatório'),
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres').max(150),
@@ -38,24 +31,17 @@ const baseRepublicaSchema = z.object({
   localizacao: localizacaoSchema,
   dados: dadosSchema.optional()
 });
-
-
 export const createRepublicaSchema = baseRepublicaSchema.refine(
   data => data.vagas_disponiveis <= data.vagas_total, {
   message: "Vagas disponíveis não podem ser maiores que o total de vagas",
   path: ["vagas_disponiveis"]
 });
-
 export type CreateRepublicaInput = z.infer<typeof createRepublicaSchema>;
-
-
 export const updateRepublicaSchema = baseRepublicaSchema.partial().extend({
-  
   localizacao: localizacaoSchema.partial().optional(),
   dados: dadosSchema.partial().optional()
 }).refine(
   data => {
-    
     if (data.vagas_disponiveis !== undefined && data.vagas_total !== undefined) {
       return data.vagas_disponiveis <= data.vagas_total;
     }
@@ -64,5 +50,4 @@ export const updateRepublicaSchema = baseRepublicaSchema.partial().extend({
   message: "Vagas disponíveis não podem ser maiores que o total de vagas",
   path: ["vagas_disponiveis"]
 });
-
 export type UpdateRepublicaInput = z.infer<typeof updateRepublicaSchema>;

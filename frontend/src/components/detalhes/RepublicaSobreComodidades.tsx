@@ -1,14 +1,10 @@
 "use client";
-
 import { Bed, Bath, Users, Wifi, Car, WashingMachine } from "lucide-react";
-
 interface RepublicaSobreComodidadesProps {
     republica: any;
 }
-
 export function RepublicaSobreComodidades({ republica }: RepublicaSobreComodidadesProps) {
     const dados = republica.dados;
-
     return (
         <>
             <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
@@ -17,7 +13,6 @@ export function RepublicaSobreComodidades({ republica }: RepublicaSobreComodidad
                     {republica.descricao || "Nenhuma descrição detalhada fornecida pelo anunciante."}
                 </p>
             </div>
-
             {dados && (
                 <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                     <h3 className="text-xl font-bold text-blue-950">Comodidades e Estrutura</h3>

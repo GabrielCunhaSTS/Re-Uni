@@ -1,24 +1,20 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, MessageSquare } from "lucide-react";
-
 interface ChatBoxProps {
     idRepublica: number;
     idAnunciante: number;
     nomeAnunciante: string;
 }
-
 export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [conteudo, setConteudo] = useState("");
     const [myId, setMyId] = useState<number | null>(null);
     const queryClient = useQueryClient();
-
     useEffect(() => {
         const userStr = localStorage.getItem("@ReUni:user");
         if (userStr) {
@@ -30,7 +26,6 @@ export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxPr
             }
         }
     }, []);
-
     const { data: mensagens = [] } = useQuery({
         queryKey: ["mensagens", idRepublica, idAnunciante],
         queryFn: async () => {
@@ -40,7 +35,6 @@ export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxPr
         enabled: isOpen && !!myId,
         refetchInterval: 3000,
     });
-
     const enviarMutation = useMutation({
         mutationFn: async (texto: string) => {
             await api.post("/mensagens", {
@@ -54,13 +48,11 @@ export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxPr
             queryClient.invalidateQueries({ queryKey: ["mensagens", idRepublica, idAnunciante] });
         },
     });
-
     function handleEnviar(e: React.FormEvent) {
         e.preventDefault();
         if (!conteudo.trim()) return;
         enviarMutation.mutate(conteudo);
     }
-
     return (
         <div>
             {!isOpen ? (
@@ -73,10 +65,8 @@ export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxPr
                         <h4 className="font-bold text-slate-800 text-sm">Chat com {nomeAnunciante}</h4>
                         <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-700 text-xs font-bold">Fechar</button>
                     </div>
-
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                         {mensagens.map((msg: any) => {
-                            // Se o remetente da mensagem for o usuário logado, joga para a direita (azul). Senão, esquerda.
                             const isMe = msg.id_remetente === myId;
                             return (
                                 <div key={msg.id_mensagem} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
@@ -87,12 +77,11 @@ export function ChatBox({ idRepublica, idAnunciante, nomeAnunciante }: ChatBoxPr
                             );
                         })}
                     </div>
-
                     <form onSubmit={handleEnviar} className="mt-3 flex gap-2 pt-2 border-t border-slate-100">
-                        <Input 
-                            value={conteudo} 
-                            onChange={(e) => setConteudo(e.target.value)} 
-                            placeholder="Digite sua dúvida..." 
+                        <Input
+                            value={conteudo}
+                            onChange={(e) => setConteudo(e.target.value)}
+                            placeholder="Digite sua dúvida..."
                             className="rounded-xl text-xs bg-slate-50 border-slate-200"
                         />
                         <Button type="submit" size="icon" className="bg-blue-900 hover:bg-blue-800 rounded-xl shrink-0">

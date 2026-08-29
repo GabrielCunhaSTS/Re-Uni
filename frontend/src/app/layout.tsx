@@ -3,14 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "sonner";
-
 const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
     title: "ReUni | Moradias Estudantis",
     description: "Conectando estudantes ao lugar ideal para morar.",
 };
-
 export default function RootLayout({
     children,
 }: Readonly<{

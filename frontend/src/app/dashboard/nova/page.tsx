@@ -1,25 +1,20 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
 import { NovaRepublicaHeader } from "@/components/nova-republica/NovaRepublicaHeader";
 import { FormInformacoesBasicas } from "@/components/nova-republica/FormInformacoesBasicas";
 import { FormLocalizacao } from "@/components/nova-republica/FormLocalizacao";
 import { FormComodidades } from "@/components/nova-republica/FormComodidades";
 import { FormImagens } from "@/components/nova-republica/FormImagens";
-
 export default function NovaRepublicaPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
-
     const [imagensExistentes, setImagensExistentes] = useState<{ url: string }[]>([]);
     const [novosArquivos, setNovosArquivos] = useState<File[]>([]);
-
     const [form, setForm] = useState({
         nome: "",
         descricao: "",
@@ -44,15 +39,12 @@ export default function NovaRepublicaPage() {
         possui_area_lazer: true,
         aceita_pets: false,
     });
-
     async function handleCepBlur(e: React.FocusEvent<HTMLInputElement>) {
         const cepLimpo = e.target.value.replace(/\D/g, "");
         if (cepLimpo.length !== 8) return;
-
         try {
             const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
             const data = await res.json();
-
             if (!data.erro) {
                 setForm((prev) => ({
                     ...prev,
@@ -65,17 +57,14 @@ export default function NovaRepublicaPage() {
             console.error("Erro ao buscar CEP:", error);
         }
     }
-
     const criarMutation = useMutation({
         mutationFn: async () => {
             let latitude = -23.9608;
             let longitude = -46.3336;
-
             try {
                 const queryGeo = encodeURIComponent(`${form.endereco},${form.numero} - ${form.bairro},${form.cidade}, Brasil`);
                 const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryGeo}`);
                 const dataGeo = await resGeo.json();
-
                 if (dataGeo && dataGeo.length > 0) {
                     latitude = parseFloat(dataGeo[0].lat);
                     longitude = parseFloat(dataGeo[0].lon);
@@ -83,7 +72,6 @@ export default function NovaRepublicaPage() {
             } catch (err) {
                 console.warn("Mantendo coordenadas padrão.", err);
             }
-
             const payload = {
                 nome: form.nome.trim(),
                 descricao: form.descricao?.trim() || "",
@@ -114,34 +102,26 @@ export default function NovaRepublicaPage() {
                     aceita_pets: Boolean(form.aceita_pets),
                 }
             };
-
             const response = await api.post("/republicas", payload);
-            
-            // CORREÇÃO: Extrai corretamente a república de dentro do objeto de resposta da API
             const dadosResposta = response.data.republica || response.data;
             const idRepublica = dadosResposta.id_republica || dadosResposta.id;
-
-            // Envia as imagens via FormData separadamente após criar a república
             if (novosArquivos.length > 0 && idRepublica) {
                 const formData = new FormData();
                 novosArquivos.forEach((file) => {
                     formData.append("imagens", file);
                 });
-
                 await api.post(`/republicas/${idRepublica}/imagens`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
                 });
             }
-
             return dadosResposta;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["minhas-republicas"] });
             queryClient.invalidateQueries({ queryKey: ["republicas-publicas"] });
             queryClient.invalidateQueries({ queryKey: ["estatisticas-dashboard"] });
-            
             toast.success("República cadastrada com sucesso!");
             router.push("/dashboard");
         },
@@ -149,24 +129,20 @@ export default function NovaRepublicaPage() {
             toast.error(err.response?.data?.mensagem || "Erro ao cadastrar república.");
         }
     });
-
     return (
         <div className="min-h-screen bg-slate-50/60 pb-20 text-slate-900">
             <NovaRepublicaHeader />
-
             <main className="max-w-3xl mx-auto px-6 pt-8">
                 <form onSubmit={(e) => { e.preventDefault(); criarMutation.mutate(); }} className="space-y-8 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                     <FormInformacoesBasicas form={form} setForm={setForm} />
                     <FormLocalizacao form={form} setForm={setForm} onCepBlur={handleCepBlur} />
                     <FormComodidades form={form} setForm={setForm} />
-                    
-                    <FormImagens 
+                    <FormImagens
                         imagensExistentes={imagensExistentes}
                         setImagensExistentes={setImagensExistentes}
                         novosArquivos={novosArquivos}
                         setNovosArquivos={setNovosArquivos}
                     />
-
                     <Button type="submit" disabled={criarMutation.isPending} className="w-full bg-blue-900 hover:bg-blue-800 text-white py-6 rounded-2xl font-bold shadow-md">
                         {criarMutation.isPending ? "Cadastrando e enviando fotos..." : "Publicar República"}
                     </Button>

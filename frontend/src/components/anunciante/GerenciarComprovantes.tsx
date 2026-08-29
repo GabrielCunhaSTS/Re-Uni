@@ -1,14 +1,11 @@
 "use client";
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, FileText, Clock } from "lucide-react";
 import { toast } from "sonner";
-
 export function GerenciarComprovantes({ idRepublica }: { idRepublica: number }) {
     const queryClient = useQueryClient();
-
     const { data: comprovantes = [], isLoading } = useQuery({
         queryKey: ["comprovantes-anunciante", idRepublica],
         queryFn: async () => {
@@ -17,7 +14,6 @@ export function GerenciarComprovantes({ idRepublica }: { idRepublica: number }) 
         },
         enabled: !!idRepublica,
     });
-
     const alterarStatusMutation = useMutation({
         mutationFn: async ({ idComprovante, status }: { idComprovante: number; status: string }) => {
             await api.patch(`/comprovantes/${idComprovante}/status`, { status });
@@ -25,21 +21,18 @@ export function GerenciarComprovantes({ idRepublica }: { idRepublica: number }) 
         onSuccess: () => {
             toast.success("Status do pagamento atualizado com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["comprovantes-anunciante", idRepublica] });
-            queryClient.invalidateQueries({ queryKey: ["dashboard-financeiro"] }); // Atualiza os totais financeiros do painel
+            queryClient.invalidateQueries({ queryKey: ["dashboard-financeiro"] });
         },
         onError: () => {
             toast.error("Erro ao atualizar o status.");
         }
     });
-
     if (isLoading) {
         return <div className="p-6 text-slate-500 text-sm">Carregando comprovantes...</div>;
     }
-
     return (
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-lg font-extrabold text-blue-950">Comprovantes de Aluguel Recebidos</h3>
-            
             {comprovantes.length === 0 ? (
                 <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl">
                     <p className="text-slate-400 text-sm">Nenhum comprovante enviado para esta república ainda.</p>
@@ -63,28 +56,26 @@ export function GerenciarComprovantes({ idRepublica }: { idRepublica: number }) 
                                     </div>
                                 </div>
                             </div>
-
                             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                                <a 
-                                    href={comp.arquivo_url} 
-                                    target="_blank" 
-                                    rel="noreferrer" 
+                                <a
+                                    href={comp.arquivo_url}
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="text-xs font-bold text-blue-600 hover:underline mr-2"
                                 >
                                     Ver Arquivo
                                 </a>
-
                                 {comp.status === "pendente" ? (
                                     <>
-                                        <Button 
-                                            size="sm" 
+                                        <Button
+                                            size="sm"
                                             onClick={() => alterarStatusMutation.mutate({ idComprovante: comp.id_comprovante, status: "aprovado" })}
                                             className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 px-3 text-xs"
                                         >
                                             <CheckCircle2 className="w-4 h-4 mr-1" /> Aprovar
                                         </Button>
-                                        <Button 
-                                            size="sm" 
+                                        <Button
+                                            size="sm"
                                             onClick={() => alterarStatusMutation.mutate({ idComprovante: comp.id_comprovante, status: "rejeitado" })}
                                             className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-9 px-3 text-xs"
                                         >

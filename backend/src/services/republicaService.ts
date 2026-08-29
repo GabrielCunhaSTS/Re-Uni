@@ -10,7 +10,6 @@ import {
 } from "../models/index.js";
 import { Op } from "sequelize";
 import type { CreateRepublicaInput, UpdateRepublicaInput } from "../schemas/republicaSchema.js";
-
 export const criarRepublica = async (
     dadosEntrada: CreateRepublicaInput,
     id_usuario: number
@@ -32,7 +31,6 @@ export const criarRepublica = async (
             },
             { transaction: t }
         );
-
         await LocalizacaoRepublica.create(
             {
                 id_republica: novaRepublica.id_republica,
@@ -48,7 +46,6 @@ export const criarRepublica = async (
             },
             { transaction: t }
         );
-
         await DadosRepublica.create(
             {
                 id_republica: novaRepublica.id_republica,
@@ -64,7 +61,6 @@ export const criarRepublica = async (
             },
             { transaction: t }
         );
-
         return await Republica.findByPk(novaRepublica.id_republica, {
             include: [
                 {
@@ -97,7 +93,6 @@ export const criarRepublica = async (
         });
     });
 };
-
 export const listarRepublicas = async (filtros?: {
     cidade?: string | undefined;
     valorMax?: number | undefined;
@@ -107,32 +102,26 @@ export const listarRepublicas = async (filtros?: {
     const whereRepublica: any = {
         ativo: true
     };
-
     const whereLocalizacao: any = {};
-
     if (filtros?.valorMax !== undefined) {
         whereRepublica.valor_mensal = {
             [Op.lte]: filtros.valorMax
         };
     }
-
     if (filtros?.valorMin !== undefined) {
         whereRepublica.valor_mensal = {
             ...(whereRepublica.valor_mensal || {}),
             [Op.gte]: filtros.valorMin
         };
     }
-
     if (filtros?.tipo !== undefined) {
         whereRepublica.id_tipo_republica = filtros.tipo;
     }
-
     if (filtros?.cidade) {
         whereLocalizacao.cidade = {
             [Op.like]: `%${filtros.cidade}%`
         };
     }
-
 return await Republica.findAll({
         where: whereRepublica,
         include: [
@@ -165,7 +154,6 @@ return await Republica.findAll({
         order: [["criado_em", "DESC"]]
     });
 };
-
 export const buscarRepublicaPorId = async (id: number) => {
     return await Republica.findOne({
         where: {
@@ -208,24 +196,19 @@ export const buscarRepublicaPorId = async (id: number) => {
         ]
     });
 };
-
 export const atualizarRepublica = async (
     id_republica: number,
     id_usuario: number,
     dadosEntrada: UpdateRepublicaInput
 ) => {
-    
     await sequelize.transaction(async (t) => {
         const republica = await Republica.findByPk(id_republica);
-
         if (!republica) {
             throw new Error("REPUBLICA_NAO_ENCONTRADA");
         }
-
         if (republica.id_usuario !== id_usuario) {
             throw new Error("NAO_AUTORIZADO");
         }
-
         await republica.update({
             id_tipo_republica: dadosEntrada.id_tipo_republica ?? republica.id_tipo_republica,
             nome: dadosEntrada.nome ?? republica.nome,
@@ -234,51 +217,37 @@ export const atualizarRepublica = async (
             vagas_total: dadosEntrada.vagas_total ?? republica.vagas_total,
             vagas_disponiveis: dadosEntrada.vagas_disponiveis ?? republica.vagas_disponiveis,
         }, { transaction: t });
-
         if (dadosEntrada.localizacao) {
             const dadosLocalizacao = Object.fromEntries(
                 Object.entries(dadosEntrada.localizacao).filter(([_, valor]) => valor !== undefined)
             ) as any;
-
             await LocalizacaoRepublica.update(
                 dadosLocalizacao,
                 { where: { id_republica: republica.id_republica }, transaction: t }
             );
         }
-
         if (dadosEntrada.dados) {
             const dadosExtras = Object.fromEntries(
                 Object.entries(dadosEntrada.dados).filter(([_, valor]) => valor !== undefined)
             ) as any;
-
             await DadosRepublica.update(
                 dadosExtras,
                 { where: { id_republica: republica.id_republica }, transaction: t }
             );
         }
-    }); 
-
-    
-    return await buscarRepublicaPorId(id_republica); 
+    });
+    return await buscarRepublicaPorId(id_republica);
 };
-
 export const deletarRepublica = async (
     id_republica: number,
     id_usuario: number
 ) => {
-    
     const republica = await Republica.findByPk(id_republica);
-
-    
     if (!republica || !republica.ativo) {
         throw new Error("REPUBLICA_NAO_ENCONTRADA");
     }
-
-    
     if (republica.id_usuario !== id_usuario) {
         throw new Error("NAO_AUTORIZADO");
     }
-
-    
     await republica.update({ ativo: false });
 };

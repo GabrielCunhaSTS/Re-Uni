@@ -1,5 +1,4 @@
 import { Republica, Aluguel, Usuario } from "../models/index.js";
-
 export const obterDadosFinanceirosService = async (id_anunciante: number) => {
     const republicas = await Republica.findAll({
         where: { id_usuario: id_anunciante, ativo: true },
@@ -19,17 +18,13 @@ export const obterDadosFinanceirosService = async (id_anunciante: number) => {
             }
         ]
     });
-
     let faturamentoTotalMensal = 0;
     const detalhesImoveis: any[] = [];
-
     republicas.forEach((republica: any) => {
         const valorMensal = Number(republica.valor_mensal) || 0;
         const alugueisAtivos = republica.alugueis || [];
-        
         const receitaImovel = alugueisAtivos.length * valorMensal;
         faturamentoTotalMensal += receitaImovel;
-
         detalhesImoveis.push({
             id_republica: republica.id_republica || republica.id,
             nome: republica.nome,
@@ -39,7 +34,6 @@ export const obterDadosFinanceirosService = async (id_anunciante: number) => {
             inquilinos: alugueisAtivos.map((a: any) => a.usuario)
         });
     });
-
     return {
         faturamentoTotalMensal,
         totalImoveisAtivos: republicas.length,

@@ -1,18 +1,14 @@
 "use client";
-
 import { Home, LogOut, User, DollarSign, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MenuNotificacoes } from "@/app/notificacoes/MenuNotificacoes";
 import { useRouter } from "next/navigation";
-
 interface DashboardHeaderProps {
     userName: string;
     onLogout: () => void;
 }
-
 export function DashboardHeader({ userName, onLogout }: DashboardHeaderProps) {
     const router = useRouter();
-
     return (
         <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-40">
             <div className="flex items-center gap-3">
@@ -24,28 +20,23 @@ export function DashboardHeader({ userName, onLogout }: DashboardHeaderProps) {
                     <span className="text-xs text-slate-400 font-medium">Painel do Anunciante</span>
                 </div>
             </div>
-
             <div className="flex items-center gap-4">
                 <span className="text-sm text-slate-600 hidden sm:block">
                     Olá, <strong className="text-slate-900">{userName}</strong>
                 </span>
-
                 <MenuNotificacoes />
                 <Button onClick={() => router.push("/dashboard/mensagens")} variant="outline" size="sm" className="rounded-xl border-slate-200 text-slate-700">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Mensagens
                 </Button>
-
                 <Button onClick={() => router.push("/perfil")} variant="outline" size="sm" className="rounded-xl border-slate-200 text-slate-700">
                     <User className="w-4 h-4 mr-2" />
                     Meu Perfil
                 </Button>
-
                 <Button onClick={() => router.push("/dashboard/financeiro")} variant="outline" className="rounded-xl border-slate-200 text-emerald-700 hover:bg-emerald-50">
                     <DollarSign className="w-4 h-4 mr-2" />
                     Controle Financeiro
                 </Button>
-
                 <Button onClick={onLogout} variant="outline" size="sm" className="rounded-xl border-slate-200 text-red-600 hover:bg-red-50 hover:text-red-700">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sair

@@ -1,6 +1,5 @@
 import { Republica, LocalizacaoRepublica, Imagem, Estado } from "../models/index.js";
 import { Op } from "sequelize";
-
 interface FiltrosRepublica {
     cidade?: string | undefined;
     id_estado?: string | undefined;
@@ -9,21 +8,17 @@ interface FiltrosRepublica {
     preco_max?: string | undefined;
     pesquisa?: string | undefined;
 }
-
 export const filtrarRepublicasService = async (filtros: FiltrosRepublica) => {
     const whereRepublica: any = { ativo: true };
-
     if (filtros.id_tipo_republica) {
         whereRepublica.id_tipo_republica = Number(filtros.id_tipo_republica);
     }
-
     if (filtros.pesquisa) {
         whereRepublica[Op.or] = [
             { nome: { [Op.like]: `%${filtros.pesquisa}%` } },
             { descricao: { [Op.like]: `%${filtros.pesquisa}%` } }
         ];
     }
-
     if (filtros.preco_min || filtros.preco_max) {
         whereRepublica.valor_mensal = {};
         if (filtros.preco_min) {
@@ -33,7 +28,6 @@ export const filtrarRepublicasService = async (filtros: FiltrosRepublica) => {
             whereRepublica.valor_mensal[Op.lte] = Number(filtros.preco_max);
         }
     }
-
     const whereLocalizacao: any = {};
     if (filtros.cidade) {
         whereLocalizacao.cidade = { [Op.like]: `%${filtros.cidade}%` };
@@ -41,7 +35,6 @@ export const filtrarRepublicasService = async (filtros: FiltrosRepublica) => {
     if (filtros.id_estado) {
         whereLocalizacao.id_estado = Number(filtros.id_estado);
     }
-
     const republicas = await Republica.findAll({
         where: whereRepublica,
         include: [
@@ -64,6 +57,5 @@ export const filtrarRepublicasService = async (filtros: FiltrosRepublica) => {
         ],
         order: [["criado_em", "DESC"]]
     });
-
     return republicas;
 };

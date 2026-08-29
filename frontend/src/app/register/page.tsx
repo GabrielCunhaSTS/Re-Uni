@@ -1,5 +1,4 @@
 "use client";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,7 +7,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/axios";
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,19 +17,15 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-
 const registerSchema = z.object({
     nome: z.string().min(2, { message: "O nome deve ter no mínimo 2 caracteres." }),
     email: z.string().email({ message: "Digite um e-mail válido." }),
     senha: z.string().min(6, { message: "A senha deve ter no mínimo 6 caracteres." }),
     tipo: z.enum(["estudante", "anunciante"], { message: "Selecione o tipo de conta." }),
 });
-
 type RegisterForm = z.infer<typeof registerSchema>;
-
 export default function RegisterPage() {
     const router = useRouter();
-
     const form = useForm<RegisterForm>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
@@ -41,7 +35,6 @@ export default function RegisterPage() {
             tipo: "estudante",
         },
     });
-
     const registerMutation = useMutation({
         mutationFn: async (dados: RegisterForm) => {
             const response = await api.post("/auth/register", dados);
@@ -56,11 +49,9 @@ export default function RegisterPage() {
             toast.error(mensagem);
         },
     });
-
     function onSubmit(dados: RegisterForm) {
         registerMutation.mutate(dados);
     }
-
     return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50/60 px-4 py-12">
             <div className="w-full max-w-md space-y-8 rounded-3xl bg-white p-8 shadow-xl border border-slate-200">
@@ -72,7 +63,6 @@ export default function RegisterPage() {
                         Cadastre-se para encontrar moradias ou anunciar repúblicas.
                     </p>
                 </div>
-
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                         <FormField
@@ -88,7 +78,6 @@ export default function RegisterPage() {
                                 </FormItem>
                             )}
                         />
-
                         <FormField
                             control={form.control}
                             name="email"
@@ -102,7 +91,6 @@ export default function RegisterPage() {
                                 </FormItem>
                             )}
                         />
-
                         <FormField
                             control={form.control}
                             name="senha"
@@ -116,7 +104,6 @@ export default function RegisterPage() {
                                 </FormItem>
                             )}
                         />
-
                         <FormField
                             control={form.control}
                             name="tipo"
@@ -136,17 +123,15 @@ export default function RegisterPage() {
                                 </FormItem>
                             )}
                         />
-
-                        <Button 
-                            type="submit" 
-                            className="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl py-6 font-bold shadow-md" 
+                        <Button
+                            type="submit"
+                            className="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl py-6 font-bold shadow-md"
                             disabled={registerMutation.isPending}
                         >
                             {registerMutation.isPending ? "Criando conta..." : "Cadastrar"}
                         </Button>
                     </form>
                 </Form>
-
                 <div className="text-center text-sm text-slate-500 pt-4 border-t border-slate-100">
                     Já possui uma conta?{" "}
                     <Link href="/login" className="font-semibold text-blue-900 hover:underline">

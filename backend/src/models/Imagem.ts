@@ -1,16 +1,11 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface ImagemAttributes {
     id_imagem: number;
     url: string;
     criado_em: Date;
 }
-
-
 export interface ImagemCreationAttributes extends Optional<ImagemAttributes, "id_imagem" | "criado_em"> {}
-
-
 class Imagem
     extends Model<ImagemAttributes, ImagemCreationAttributes>
     implements ImagemAttributes
@@ -19,8 +14,6 @@ class Imagem
     declare url: string;
     declare criado_em: Date;
 }
-
-
 Imagem.init(
     {
         id_imagem: {
@@ -28,12 +21,10 @@ Imagem.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         url: {
             type: DataTypes.STRING(500),
             allowNull: false
         },
-
         criado_em: {
             type: DataTypes.DATE,
             allowNull: false
@@ -48,5 +39,4 @@ Imagem.init(
         updatedAt: false
     }
 );
-
 export default Imagem;

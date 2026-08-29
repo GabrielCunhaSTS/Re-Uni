@@ -1,21 +1,18 @@
 "use client";
-
 interface FormLocalizacaoProps {
     form: any;
     setForm: (form: any) => void;
     onCepBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
-
 export function FormLocalizacao({ form, setForm, onCepBlur }: FormLocalizacaoProps) {
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-bold text-blue-950 border-b border-slate-100 pb-2">Localização (Busca Automática via CEP)</h3>
-            
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">CEP</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="11013-000"
                         maxLength={9}
                         value={form.cep}
@@ -26,8 +23,8 @@ export function FormLocalizacao({ form, setForm, onCepBlur }: FormLocalizacaoPro
                 </div>
                 <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Endereço / Rua</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         required
                         placeholder="Rua do Comércio"
                         value={form.endereco}
@@ -36,12 +33,11 @@ export function FormLocalizacao({ form, setForm, onCepBlur }: FormLocalizacaoPro
                     />
                 </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Número</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         required
                         placeholder="45"
                         value={form.numero}
@@ -51,8 +47,8 @@ export function FormLocalizacao({ form, setForm, onCepBlur }: FormLocalizacaoPro
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Bairro</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         required
                         placeholder="Centro"
                         value={form.bairro}
@@ -62,8 +58,8 @@ export function FormLocalizacao({ form, setForm, onCepBlur }: FormLocalizacaoPro
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Cidade</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         required
                         placeholder="Santos"
                         value={form.cidade}

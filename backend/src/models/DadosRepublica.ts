@@ -1,6 +1,5 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import sequelize from "../config/database.js";
-
 interface DadosRepublicaAttributes {
     id_dados: number;
     id_republica: number;
@@ -14,8 +13,6 @@ interface DadosRepublicaAttributes {
     possui_area_lazer: boolean;
     aceita_pets: boolean;
 }
-
-
 export interface DadosRepublicaCreationAttributes
     extends Optional<
         DadosRepublicaAttributes,
@@ -30,8 +27,6 @@ export interface DadosRepublicaCreationAttributes
         | "possui_area_lazer"
         | "aceita_pets"
     > {}
-
-
 class DadosRepublica
     extends Model<DadosRepublicaAttributes, DadosRepublicaCreationAttributes>
     implements DadosRepublicaAttributes
@@ -48,7 +43,6 @@ class DadosRepublica
     declare possui_area_lazer: boolean;
     declare aceita_pets: boolean;
 }
-
 DadosRepublica.init(
     {
         id_dados: {
@@ -56,56 +50,46 @@ DadosRepublica.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         id_republica: {
             type: DataTypes.INTEGER,
             allowNull: false,
             unique: true
         },
-
         quartos: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
         },
-
         banheiros: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
         },
-
         moradores: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
         },
-
         mobiliada: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         possui_internet: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         possui_garagem: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         possui_lavanderia: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         possui_area_lazer: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-
         aceita_pets: {
             type: DataTypes.BOOLEAN,
             defaultValue: false
@@ -118,5 +102,4 @@ DadosRepublica.init(
         timestamps: false
     }
 );
-
 export default DadosRepublica;

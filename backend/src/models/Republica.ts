@@ -13,7 +13,6 @@ interface RepublicaAttributes {
     criado_em: Date;
     atualizado_em: Date;
 }
-
 interface RepublicaCreationAttributes
     extends Optional<
         RepublicaAttributes,
@@ -25,7 +24,6 @@ interface RepublicaCreationAttributes
         | "criado_em"
         | "atualizado_em"
     > {}
-
 class Republica
     extends Model<
         RepublicaAttributes,
@@ -45,7 +43,6 @@ class Republica
     declare criado_em: Date;
     declare atualizado_em: Date;
 }
-
 Republica.init(
     {
         id_republica: {
@@ -53,55 +50,45 @@ Republica.init(
             autoIncrement: true,
             primaryKey: true
         },
-
         id_usuario: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         id_tipo_republica: {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-
         nome: {
             type: DataTypes.STRING(150),
             allowNull: false
         },
-
         descricao: {
             type: DataTypes.TEXT,
             allowNull: true
         },
-
         valor_mensal: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false
         },
-
         vagas_total: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1
         },
-
         vagas_disponiveis: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 1
         },
-
         ativo: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
         },
-
         criado_em: {
             type: DataTypes.DATE,
             allowNull: false
         },
-
         atualizado_em: {
             type: DataTypes.DATE,
             allowNull: false
@@ -116,5 +103,4 @@ Republica.init(
         updatedAt: "atualizado_em"
     }
 );
-
 export default Republica;
