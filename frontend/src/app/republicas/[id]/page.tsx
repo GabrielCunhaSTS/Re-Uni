@@ -5,7 +5,8 @@ import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
@@ -13,6 +14,7 @@ import { RepublicaSobreComodidades } from "@/components/detalhes/RepublicaSobreC
 import { RepublicaMapa } from "@/components/detalhes/RepublicaMapa";
 import { RepublicaSidebarAnunciante } from "@/components/detalhes/RepublicaSidebarAnunciante";
 import { RepublicaComentarios } from "@/components/RepublicaComentarios";
+import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
@@ -20,8 +22,6 @@ export default function DetalhesRepublicaPage() {
     const id = params?.id;
 
     const [token, setToken] = useState<string | null>(null);
-    const [sucessoMensagem, setSucessoMensagem] = useState<string | null>(null);
-    const [erroMensagem, setErroMensagem] = useState<string | null>(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("@ReUni:token");
@@ -50,12 +50,11 @@ export default function DetalhesRepublicaPage() {
             return response.data;
         },
         onSuccess: (data) => {
-            setSucessoMensagem(data.mensagem || "Solicitação de aluguel enviada com sucesso!");
-            setErroMensagem(null);
+            toast.success(data.mensagem || "Solicitação de aluguel enviada com sucesso!");
         },
         onError: (error: any) => {
-            setErroMensagem(error.response?.data?.mensagem || "Erro ao solicitar aluguel.");
-            setSucessoMensagem(null);
+            const mensagem = error.response?.data?.mensagem || "Erro ao solicitar aluguel.";
+            toast.error(mensagem);
         }
     });
 
@@ -78,6 +77,8 @@ export default function DetalhesRepublicaPage() {
         );
     }
 
+    const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
+
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -95,19 +96,6 @@ export default function DetalhesRepublicaPage() {
             </header>
 
             <main className="max-w-5xl mx-auto px-6 pt-8 space-y-8">
-                {sucessoMensagem && (
-                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl flex items-center gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                        <p className="text-sm font-medium">{sucessoMensagem}</p>
-                    </div>
-                )}
-
-                {erroMensagem && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl flex items-center gap-3">
-                        <p className="text-sm font-medium">{erroMensagem}</p>
-                    </div>
-                )}
-
                 <RepublicaHeader republica={republica} />
 
                 <RepublicaImagens republica={republica} />
@@ -118,10 +106,11 @@ export default function DetalhesRepublicaPage() {
 
                         <RepublicaMapa localizacao={republica.localizacao} />
 
-                        {id && <RepublicaComentarios idRepublica={Array.isArray(id) ? id[0] : id} />}
+                        {id && <RepublicaComentarios idRepublica={idRepublicaStr} />}
+
+                        {id && <SecaoAvaliacoes idRepublica={idRepublicaStr} />}
                     </div>
 
-                    {/* Sidebar do Anunciante */}
                     <div className="space-y-6">
                         <RepublicaSidebarAnunciante 
                             anunciante={republica.anunciante} 

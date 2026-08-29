@@ -5,12 +5,19 @@ import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, LogIn, UserPlus, Search, MapPin, LogOut, LayoutDashboard, Heart } from "lucide-react";
+import { Home, LogIn, UserPlus, Search, MapPin, LogOut, LayoutDashboard, Heart, SlidersHorizontal, User } from "lucide-react";
 import { RepublicaCard } from "@/components/home/RepublicaCard";
+import { MenuNotificacoes } from "./notificacoes/MenuNotificacoes";
 
 export default function HomePage() {
     const router = useRouter();
+    
     const [cidadeBusca, setCidadeBusca] = useState("");
+    const [precoMin, setPrecoMin] = useState("");
+    const [precoMax, setPrecoMax] = useState("");
+    const [pesquisaGeral, setPesquisaGeral] = useState("");
+    const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
     const [usuarioLogado, setUsuarioLogado] = useState<any>(null);
 
     useEffect(() => {
@@ -25,11 +32,18 @@ export default function HomePage() {
         }
     }, []);
 
-    const { data: republicas, isLoading, isError } = useQuery({
-        queryKey: ["republicas-publicas", cidadeBusca],
+    const { data: republicas = [], isLoading, isError } = useQuery({
+        queryKey: ["republicas-publicas", cidadeBusca, precoMin, precoMax, pesquisaGeral],
         queryFn: async () => {
-            const endpoint = cidadeBusca ? `/republicas/buscar?cidade=${cidadeBusca}` : "/republicas";
+            const params = new URLSearchParams();
+            if (cidadeBusca) params.append("cidade", cidadeBusca);
+            if (precoMin) params.append("preco_min", precoMin);
+            if (precoMax) params.append("preco_max", precoMax);
+            if (pesquisaGeral) params.append("pesquisa", pesquisaGeral);
+
+            const endpoint = `/republicas/buscar?${params.toString()}`;
             const response = await api.get(endpoint);
+            // O backend retorna { total, republicas }
             return Array.isArray(response.data) ? response.data : response.data.republicas || [];
         },
     });
@@ -41,10 +55,7 @@ export default function HomePage() {
             if (!token) return [];
             const response = await api.get("/favoritos");
             const lista = Array.isArray(response.data) ? response.data : [];
-            
-            return lista.map((f: any) => {
-                return f.id_republica || f.id || f.republica?.id_republica || f.republica?.id;
-            }).filter(Boolean);
+            return lista.map((f: any) => f.id_republica || f.id || f.republica?.id_republica || f.republica?.id).filter(Boolean);
         },
         enabled: !!usuarioLogado,
     });
@@ -81,7 +92,9 @@ export default function HomePage() {
                             <span className="text-sm text-slate-600 hidden sm:block">
                                 Olá, <strong className="text-slate-900">{usuarioLogado.nome}</strong>
                             </span>
-                            
+
+                            <MenuNotificacoes />
+
                             <Button onClick={() => router.push("/favoritos")} variant="outline" className="rounded-xl border-slate-200 text-red-600 hover:text-red-700 hover:bg-red-50">
                                 <Heart className="w-4 h-4 mr-2 fill-red-500 text-red-500" /> Favoritos
                             </Button>
@@ -92,6 +105,10 @@ export default function HomePage() {
                                     Painel
                                 </Button>
                             )}
+
+                            <Button onClick={() => router.push("/perfil")} variant="outline" className="rounded-xl border-slate-200 text-slate-700">
+                                <User className="w-4 h-4 mr-2" /> Meu Perfil
+                            </Button>
 
                             <Button onClick={handleLogout} variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl">
                                 <LogOut className="w-4 h-4 mr-2" />
@@ -138,21 +155,64 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <div className="mt-10 bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-100 flex flex-col md:flex-row gap-4 items-center">
-                    <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex-1 w-full">
-                        <MapPin className="text-slate-400 w-5 h-5 shrink-0" />
-                        <input 
-                            type="text" 
-                            placeholder="Digite a cidade (ex: Santos, São Vicente)..."
-                            value={cidadeBusca}
-                            onChange={(e) => setCidadeBusca(e.target.value)}
-                            className="bg-transparent border-none outline-none w-full text-slate-800 placeholder:text-slate-400 text-sm"
-                        />
+                {/* BARRA DE PESQUISA E FILTROS */}
+                <div className="mt-10 bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-100 space-y-4">
+                    <div className="flex flex-col md:flex-row gap-4 items-center">
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex-1 w-full">
+                            <MapPin className="text-slate-400 w-5 h-5 shrink-0" />
+                            <input 
+                                type="text" 
+                                placeholder="Digite a cidade (ex: Santos, São Vicente)..."
+                                value={cidadeBusca}
+                                onChange={(e) => setCidadeBusca(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-slate-800 placeholder:text-slate-400 text-sm"
+                            />
+                        </div>
+
+                        <Button 
+                            onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                            variant="outline" 
+                            className="rounded-xl border-slate-200 h-12 px-5 gap-2 text-slate-700 w-full md:w-auto"
+                        >
+                            <SlidersHorizontal className="w-4 h-4" /> Filtros por Preço
+                        </Button>
                     </div>
-                    <Button className="bg-blue-900 hover:bg-blue-800 text-white w-full md:w-auto px-8 py-6 rounded-xl font-semibold shadow-md">
-                        <Search className="w-4 h-4 mr-2" />
-                        Pesquisar
-                    </Button>
+
+                    {/* PAINEL DE FILTROS DE PREÇO E NOME */}
+                    {mostrarFiltros && (
+                        <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-600 block mb-1">Preço Mínimo (R$)</label>
+                                <input 
+                                    type="number" 
+                                    placeholder="Ex: 500" 
+                                    value={precoMin} 
+                                    onChange={(e) => setPrecoMin(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-600 block mb-1">Preço Máximo (R$)</label>
+                                <input 
+                                    type="number" 
+                                    placeholder="Ex: 1500" 
+                                    value={precoMax} 
+                                    onChange={(e) => setPrecoMax(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-600 block mb-1">Pesquisar por Nome/Descrição</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Ex: Moradia perto da faculdade" 
+                                    value={pesquisaGeral} 
+                                    onChange={(e) => setPesquisaGeral(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -179,7 +239,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {republicas?.length === 0 && !isLoading && (
                         <div className="col-span-full bg-white rounded-2xl border border-slate-200 p-12 text-center">
-                            <p className="text-slate-500 text-lg">Nenhuma república encontrada com esses critérios.</p>
+                            <p className="text-slate-500 text-lg">Nenhuma república encontrada com esses critérios de filtro.</p>
                         </div>
                     )}
 

@@ -5,7 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/axios";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +19,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+
 
 const loginSchema = z.object({
     email: z.string().email({ message: "Digite um e-mail válido." }),
@@ -36,7 +39,7 @@ export default function LoginPage() {
         },
     });
 
-    const loginMutation = useMutation({
+const loginMutation = useMutation({
         mutationFn: async (dados: LoginForm) => {
             const response = await api.post("/auth/login", dados);
             return response.data;
@@ -45,12 +48,19 @@ export default function LoginPage() {
             localStorage.setItem("@ReUni:token", data.token);
             if (data.usuario) {
                 localStorage.setItem("@ReUni:user", JSON.stringify(data.usuario));
+                
+                if (data.usuario.tipo === "anunciante") {
+                    router.push("/dashboard");
+                } else {
+                    router.push("/");
+                }
+            } else {
+                router.push("/");
             }
-            router.push("/dashboard"); 
         },
         onError: (error: any) => {
             const mensagem = error.response?.data?.mensagem || "Erro ao fazer login.";
-            alert(mensagem); 
+            toast.error(mensagem); 
         },
     });
 
@@ -102,13 +112,20 @@ export default function LoginPage() {
 
                         <Button 
                             type="submit" 
-                            className="w-full" 
+                            className="w-full bg-blue-900 hover:bg-blue-800 text-white rounded-xl" 
                             disabled={loginMutation.isPending}
                         >
                             {loginMutation.isPending ? "Autenticando..." : "Entrar"}
                         </Button>
                     </form>
                 </Form>
+
+                <div className="text-center text-sm text-zinc-600 pt-2 border-t border-zinc-100">
+                    Caso não tenha cadastro,{" "}
+                    <Link href="/register" className="font-semibold text-blue-900 hover:underline">
+                        faça seu cadastro
+                    </Link>
+                </div>
             </div>
         </div>
     );
