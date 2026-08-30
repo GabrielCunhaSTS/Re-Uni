@@ -1,4 +1,5 @@
 import { Republica, Aluguel, Usuario } from "../models/index.js";
+
 export const obterDadosFinanceirosService = async (id_anunciante: number) => {
     const republicas = await Republica.findAll({
         where: { id_usuario: id_anunciante, ativo: true },
@@ -18,22 +19,34 @@ export const obterDadosFinanceirosService = async (id_anunciante: number) => {
             }
         ]
     });
+
     let faturamentoTotalMensal = 0;
     const detalhesImoveis: any[] = [];
+
     republicas.forEach((republica: any) => {
         const valorMensal = Number(republica.valor_mensal) || 0;
         const alugueisAtivos = republica.alugueis || [];
         const receitaImovel = alugueisAtivos.length * valorMensal;
+
         faturamentoTotalMensal += receitaImovel;
+
         detalhesImoveis.push({
             id_republica: republica.id_republica || republica.id,
             nome: republica.nome,
             valor_mensal: valorMensal,
             total_inquilinos: alugueisAtivos.length,
             receita_atual: receitaImovel,
-            inquilinos: alugueisAtivos.map((a: any) => a.usuario)
+
+            inquilinos: alugueisAtivos.map((a: any) => ({
+                id_aluguel: a.id_aluguel,
+                nome: a.usuario?.nome || "Nome não informado",
+                email: a.usuario?.email || "Sem e-mail",
+                status_matricula: a.status_matricula,
+                comprovante_matricula_url: a.comprovante_matricula_url
+            }))
         });
     });
+
     return {
         faturamentoTotalMensal,
         totalImoveisAtivos: republicas.length,

@@ -4,7 +4,7 @@ import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
@@ -15,6 +15,7 @@ import { RepublicaComentarios } from "@/components/RepublicaComentarios";
 import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
 import { EnviarComprovanteModal } from "@/components/estudante/EnviarComprovanteModal";
 import { PainelManutencao } from "@/components/manutencao/PainelManutencao";
+import { EnviarMatriculaModal } from "@/components/estudante/EnviarMatriculaModal";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
@@ -41,30 +42,18 @@ export default function DetalhesRepublicaPage() {
         enabled: !!id,
     });
 
-const { data: aluguelAtivo } = useQuery({
+    const { data: meuAluguel } = useQuery({
         queryKey: ["meu-aluguel-republica", id],
         queryFn: async () => {
             if (!token || !id) return null;
             try {
                 const response = await api.get("/alugueis/meus");
-
-
                 const dadosApi = response.data;
-                const aluguéis = Array.isArray(dadosApi)
-                    ? dadosApi
-                    : (dadosApi?.aluguéis || dadosApi?.alugueis || dadosApi?.data || []);
+                const alugueis = Array.isArray(dadosApi) ? dadosApi : (dadosApi?.aluguéis || dadosApi?.data || []);
 
-                console.log("Aluguéis do usuário normalizados:", aluguéis);
-
-                const encontrado = aluguéis.find((a: any) => {
-                    const idRepAluguel = Number(a.id_republica || a.Republica?.id_republica || a.republica_id);
-                    const statusAluguel = a.status?.toLowerCase();
-
-
-                    const ehDaRepublica = idRepAluguel === Number(id);
-                    const estaValido = statusAluguel === "ativo" || statusAluguel === "aprovado" || statusAluguel === "pendente_comprovante";
-
-                    return ehDaRepublica && estaValido;
+                const encontrado = alugueis.find((a: any) => {
+                    const idRepAluguel = Number(a.id_republica || a.republica?.id_republica);
+                    return idRepAluguel === Number(id);
                 });
 
                 return encontrado || null;
@@ -95,7 +84,7 @@ const { data: aluguelAtivo } = useQuery({
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <p className="text-slate-500 animate-pulse text-lg font-medium">Carregando detalhes da república...</p>
+                <p className="text-slate-500 animate-pulse text-lg font-medium">Carregando detalhes...</p>
             </div>
         );
     }
@@ -112,6 +101,16 @@ const { data: aluguelAtivo } = useQuery({
     }
 
     const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
+
+    const statusAluguel = meuAluguel?.status?.toLowerCase();
+
+    const temAluguelAtivo = ["ativo", "aprovado"].includes(statusAluguel);
+
+    const isPendente = statusAluguel === "pendente";
+
+    const isPendenteComprovante = statusAluguel === "pendente_comprovante";
+
+    const podeVerPainelManutencao = temAluguelAtivo || isPendenteComprovante;
 
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
@@ -136,12 +135,9 @@ const { data: aluguelAtivo } = useQuery({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
                         <RepublicaSobreComodidades republica={republica} />
-
                         <RepublicaMapa localizacao={republica?.localizacao} />
 
-                        {}
-                        {}
-                        {id && aluguelAtivo && Number(aluguelAtivo.id_republica || aluguelAtivo.Republica?.id_republica || aluguelAtivo.republica_id) === Number(id) && (
+                        {podeVerPainelManutencao && (
                             <PainelManutencao
                                 idRepublica={Number(id)}
                                 isAnunciante={false}
@@ -158,12 +154,26 @@ const { data: aluguelAtivo } = useQuery({
                             anunciante={republica.anunciante}
                             vagasDisponiveis={republica.vagas_disponiveis}
                             isPending={solicitarAluguelMutation.isPending}
-                            onSolicitar={() => solicitarAluguelMutation.mutate()}
+                            onSolicitar={() => {
+                                if (isPendente) {
+                                    toast.info("Sua solicitação está pendente! Aguarde o anunciante aprovar.");
+                                    return;
+                                }
+                                if (podeVerPainelManutencao) {
+                                    toast.info("Você já é morador desta república!");
+                                    return;
+                                }
+                                solicitarAluguelMutation.mutate();
+                            }}
                             idRepublica={Number(id)}
                         />
 
-                        {aluguelAtivo?.id_aluguel && (
-                            <EnviarComprovanteModal idAluguel={aluguelAtivo.id_aluguel} />
+                       {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
+                            <EnviarComprovanteModal idAluguel={meuAluguel.id_aluguel} />
+                        )}
+
+                        {temAluguelAtivo && meuAluguel?.status_matricula !== "aprovado" && meuAluguel?.id_aluguel && (
+                            <EnviarMatriculaModal idAluguel={meuAluguel.id_aluguel} />
                         )}
                     </div>
                 </div>

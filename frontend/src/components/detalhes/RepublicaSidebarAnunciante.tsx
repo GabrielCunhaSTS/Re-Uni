@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 import { EnviarComprovanteModal } from "@/components/estudante/EnviarComprovanteModal";
+import { ChatBox } from "@/app/chat/ChatBox";
+
 interface RepublicaSidebarAnuncianteProps {
     anunciante: {
+        id_usuario: number;
         nome: string;
         email: string;
     };
@@ -12,6 +15,7 @@ interface RepublicaSidebarAnuncianteProps {
     idRepublica: number;
     aluguelAtivo?: { id_aluguel: number } | null;
 }
+
 export function RepublicaSidebarAnunciante({
     anunciante,
     vagasDisponiveis,
@@ -30,7 +34,9 @@ export function RepublicaSidebarAnunciante({
                         <Mail className="w-3.5 h-3.5" /> {anunciante?.email || "Não informado"}
                     </p>
                 </div>
+
                 <hr className="border-slate-100" />
+
                 <div className="space-y-3">
                     <Button
                         onClick={onSolicitar}
@@ -43,16 +49,15 @@ export function RepublicaSidebarAnunciante({
                         Ao solicitar, o proprietário receberá um aviso para aprovar sua entrada.
                     </p>
                 </div>
-                <Button
-                    variant="outline"
-                    className="w-full rounded-xl border-blue-900 text-blue-900 hover:bg-blue-50 font-bold"
-                >
-                    Conversar com o Anunciante
-                </Button>
+
+                {anunciante?.id_usuario && (
+                    <ChatBox
+                        idRepublica={idRepublica}
+                        idAnunciante={anunciante.id_usuario}
+                        nomeAnunciante={anunciante.nome}
+                    />
+                )}
             </div>
-            {aluguelAtivo?.id_aluguel && (
-                <EnviarComprovanteModal idAluguel={aluguelAtivo.id_aluguel} />
-            )}
         </div>
     );
 }

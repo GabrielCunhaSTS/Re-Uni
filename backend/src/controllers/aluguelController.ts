@@ -3,8 +3,11 @@ import {
     solicitarAluguelService,
     listarAlugueisDoUsuarioService,
     atualizarStatusAluguelService,
-    listarAlugueisRecebidosService
+    listarAlugueisRecebidosService,
+    enviarComprovanteMatriculaService,
+    avaliarComprovanteMatriculaService
 } from "../services/aluguelService.js";
+
 export const solicitarAluguel = async (req: Request, res: Response): Promise<void> => {
     try {
         const id_usuario = req.user?.id_usuario;
@@ -105,5 +108,47 @@ export const listarAlugueisRecebidos = async (req: Request, res: Response): Prom
     } catch (error) {
         console.error("Erro ao listar aluguéis recebidos:", error);
         res.status(500).json({ mensagem: "Erro interno do servidor." });
+    }
+};
+
+export const enviarComprovanteMatricula = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id_usuario = req.user?.id_usuario;
+        const id_aluguel = Number(req.params.id_aluguel);
+
+
+        const url_pdf = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : req.body.url_pdf;
+
+        if (!id_usuario) {
+            res.status(401).json({ mensagem: "Não autenticado." });
+            return;
+        }
+        if (!url_pdf) {
+            res.status(400).json({ mensagem: "O arquivo PDF é obrigatório." });
+            return;
+        }
+
+        const aluguelAtualizado = await enviarComprovanteMatriculaService(id_aluguel, id_usuario, url_pdf);
+        res.status(200).json({ mensagem: "Comprovante enviado com sucesso!", aluguel: aluguelAtualizado });
+    } catch (error: any) {
+        res.status(500).json({ mensagem: error.message || "Erro interno" });
+    }
+};
+
+export const avaliarComprovanteMatricula = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id_anunciante = req.user?.id_usuario;
+        const id_aluguel = Number(req.params.id_aluguel);
+        const { status } = req.body;
+
+        if (!id_anunciante) {
+            res.status(401).json({ mensagem: "Não autenticado." });
+            return;
+        }
+
+        const aluguelAtualizado = await avaliarComprovanteMatriculaService(id_aluguel, id_anunciante, status);
+        res.status(200).json({ mensagem: "Matrícula avaliada com sucesso!", aluguel: aluguelAtualizado });
+    } catch (error: any) {
+        res.status(500).json({ mensagem: error.message || "Erro interno" });
     }
 };
