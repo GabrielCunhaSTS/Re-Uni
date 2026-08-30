@@ -17,13 +17,16 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+
 const registerSchema = z.object({
     nome: z.string().min(2, { message: "O nome deve ter no mínimo 2 caracteres." }),
     email: z.string().email({ message: "Digite um e-mail válido." }),
     senha: z.string().min(6, { message: "A senha deve ter no mínimo 6 caracteres." }),
     tipo: z.enum(["estudante", "anunciante"], { message: "Selecione o tipo de conta." }),
 });
+
 type RegisterForm = z.infer<typeof registerSchema>;
+
 export default function RegisterPage() {
     const router = useRouter();
     const form = useForm<RegisterForm>({
@@ -35,6 +38,7 @@ export default function RegisterPage() {
             tipo: "estudante",
         },
     });
+
     const registerMutation = useMutation({
         mutationFn: async (dados: RegisterForm) => {
             const response = await api.post("/auth/register", dados);
@@ -49,9 +53,11 @@ export default function RegisterPage() {
             toast.error(mensagem);
         },
     });
+
     function onSubmit(dados: RegisterForm) {
         registerMutation.mutate(dados);
     }
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50/60 px-4 py-12">
             <div className="w-full max-w-md space-y-8 rounded-3xl bg-white p-8 shadow-xl border border-slate-200">

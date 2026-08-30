@@ -1,4 +1,6 @@
 import type { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import {
     registerSchema,
     loginSchema
@@ -8,6 +10,9 @@ import {
     loginUsuario,
     buscarUsuarioAutenticado
 } from "../services/authService.js";
+import { Usuario } from "../models/index.js";
+import { enviarEmailRecuperacao } from "../services/emailService.js";
+
 export const register = async (
     req: Request,
     res: Response
@@ -21,7 +26,14 @@ export const register = async (
             });
             return;
         }
-        const usuario = await registerUsuario(parsedData.data);
+
+
+        const dadosRegistro = {
+            ...parsedData.data,
+            tipo: parsedData.data.tipo || "estudante"
+        };
+
+        const usuario = await registerUsuario(dadosRegistro);
         res.status(201).json({
             mensagem: "Usuário registrado com sucesso!",
             usuario
@@ -42,6 +54,7 @@ export const register = async (
         });
     }
 };
+
 export const login = async (
     req: Request,
     res: Response
@@ -93,6 +106,7 @@ export const login = async (
         });
     }
 };
+
 export const me = async (
     req: Request,
     res: Response
@@ -121,5 +135,62 @@ export const me = async (
         res.status(500).json({
             mensagem: "Erro interno do servidor."
         });
+    }
+};
+
+export const solicitarRecuperacaoSenha = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body;
+
+        const usuario = await Usuario.findOne({ where: { email } });
+        if (!usuario) {
+            res.status(404).json({ mensagem: "Nenhuma conta encontrada com este e-mail." });
+            return;
+        }
+
+        const token = jwt.sign(
+            { id_usuario: usuario.id_usuario },
+            process.env.JWT_SECRET || "chave_padrao_desenvolvimento",
+            { expiresIn: "1h" }
+        );
+
+        await enviarEmailRecuperacao(usuario.email, token);
+
+        res.status(200).json({ mensagem: "E-mail de recuperação enviado com sucesso." });
+    } catch (error) {
+        console.error("Erro na recuperação de senha:", error);
+        res.status(500).json({ mensagem: "Erro ao processar a solicitação." });
+    }
+};
+
+export const redefinirSenha = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token, novaSenha } = req.body;
+
+        if (!token || !novaSenha) {
+            res.status(400).json({ mensagem: "Token e nova senha são obrigatórios." });
+            return;
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || "chave_padrao_desenvolvimento"
+        ) as { id_usuario: number };
+
+        const usuario = await Usuario.findByPk(decoded.id_usuario);
+        if (!usuario) {
+            res.status(404).json({ mensagem: "Usuário não encontrado." });
+            return;
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const senhaHash = await bcrypt.hash(novaSenha, salt);
+
+        await usuario.update({ senha: senhaHash });
+
+        res.status(200).json({ mensagem: "Senha redefinida com sucesso." });
+    } catch (error) {
+        console.error("Erro ao redefinir senha:", error);
+        res.status(400).json({ mensagem: "Link de recuperação inválido ou expirado." });
     }
 };

@@ -5,8 +5,10 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home, ArrowLeft, User, Lock, Save } from "lucide-react";
+import { Home, ArrowLeft, User, Lock, Save, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
+
 export default function PerfilPage() {
     const router = useRouter();
     const [usuario, setUsuario] = useState<any>(null);
@@ -14,6 +16,7 @@ export default function PerfilPage() {
     const [email, setEmail] = useState("");
     const [senhaAtual, setSenhaAtual] = useState("");
     const [novaSenha, setNovaSenha] = useState("");
+
     useEffect(() => {
         const userStr = localStorage.getItem("@ReUni:user");
         const token = localStorage.getItem("@ReUni:token");
@@ -26,6 +29,7 @@ export default function PerfilPage() {
         setNome(userData.nome || "");
         setEmail(userData.email || "");
     }, [router]);
+
     const atualizarPerfilMutation = useMutation({
         mutationFn: async (dados: any) => {
             const response = await api.put("/perfil", dados);
@@ -44,8 +48,20 @@ export default function PerfilPage() {
             toast.error(error.response?.data?.mensagem || "Erro ao atualizar perfil.");
         }
     });
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
+        if (novaSenha && !senhaAtual) {
+            toast.error("Informe sua senha atual para definir uma nova senha.");
+            return;
+        }
+
+        if (novaSenha && novaSenha.length < 6) {
+            toast.error("A nova senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
+
         const payload: any = { nome, email };
         if (novaSenha) {
             payload.senhaAtual = senhaAtual;
@@ -53,7 +69,9 @@ export default function PerfilPage() {
         }
         atualizarPerfilMutation.mutate(payload);
     }
+
     if (!usuario) return null;
+
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -109,9 +127,17 @@ export default function PerfilPage() {
                             </div>
                         </div>
                         <div className="space-y-4 pt-4 border-t border-slate-100">
-                            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                                <Lock className="w-4 h-4" /> Alterar Senha (Opcional)
-                            </h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Lock className="w-4 h-4" /> Alterar Senha (Opcional)
+                                </h3>
+                                <Link
+                                    href="/esqueci-senha"
+                                    className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                                >
+                                    <HelpCircle className="w-3.5 h-3.5" /> Esqueceu a senha atual?
+                                </Link>
+                            </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-600 block mb-1">Senha Atual</label>
                                 <Input
