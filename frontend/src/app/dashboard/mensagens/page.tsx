@@ -1,18 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, MessageSquare, Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { PainelConversa } from "@/components/mensagens/PainelConversa";
+
 export default function DashboardMensagensPage() {
     const router = useRouter();
-    const queryClient = useQueryClient();
     const [republicaSelecionada, setRepublicaSelecionada] = useState<any>(null);
     const [estudanteSelecionado, setEstudanteSelecionado] = useState<any>(null);
-    const [conteudo, setConteudo] = useState("");
     const [myId, setMyId] = useState<number | null>(null);
+
     useEffect(() => {
         const userStr = localStorage.getItem("@ReUni:user");
         if (userStr) {
@@ -24,6 +24,7 @@ export default function DashboardMensagensPage() {
             }
         }
     }, []);
+
     const { data: republicas = [] } = useQuery({
         queryKey: ["dashboard-republicas-chat"],
         queryFn: async () => {
@@ -31,7 +32,9 @@ export default function DashboardMensagensPage() {
             return response.data.republicas || [];
         }
     });
+
     const idRepAtual = republicaSelecionada?.id_republica || republicaSelecionada?.id;
+
     const { data: contatos = [] } = useQuery({
         queryKey: ["republica-contatos-chat", idRepAtual],
         queryFn: async () => {
@@ -40,6 +43,7 @@ export default function DashboardMensagensPage() {
         },
         enabled: !!idRepAtual
     });
+
     const { data: mensagens = [] } = useQuery({
         queryKey: ["mensagens-anunciante", idRepAtual, estudanteSelecionado?.id_usuario],
         queryFn: async () => {
@@ -49,24 +53,7 @@ export default function DashboardMensagensPage() {
         enabled: !!idRepAtual && !!estudanteSelecionado,
         refetchInterval: 3000,
     });
-    const enviarMutation = useMutation({
-        mutationFn: async (texto: string) => {
-            await api.post("/mensagens", {
-                id_destinatario: estudanteSelecionado.id_usuario,
-                id_republica: idRepAtual,
-                conteudo: texto,
-            });
-        },
-        onSuccess: () => {
-            setConteudo("");
-            queryClient.invalidateQueries({ queryKey: ["mensagens-anunciante"] });
-        },
-    });
-    function handleEnviar(e: React.FormEvent) {
-        e.preventDefault();
-        if (!conteudo.trim()) return;
-        enviarMutation.mutate(conteudo);
-    }
+
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
@@ -82,7 +69,9 @@ export default function DashboardMensagensPage() {
                     </div>
                 </div>
             </header>
+
             <main className="max-w-6xl mx-auto px-6 pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 h-[75vh]">
+                {}
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm overflow-y-auto space-y-4">
                     <h3 className="font-bold text-blue-950 text-sm uppercase tracking-wider">Suas Repúblicas</h3>
                     {republicas.map((rep: any) => {
@@ -121,46 +110,15 @@ export default function DashboardMensagensPage() {
                         </div>
                     )}
                 </div>
-                <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
-                    {!estudanteSelecionado ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 space-y-2">
-                            <MessageSquare className="w-12 h-12 stroke-1 text-slate-300" />
-                            <p className="text-sm font-medium">Selecione uma república e um estudante para ver a conversa.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
-                                <div>
-                                    <h4 className="font-bold text-slate-900">{estudanteSelecionado.nome}</h4>
-                                    <span className="text-xs text-slate-400">Conversando sobre: {republicaSelecionada.nome}</span>
-                                </div>
-                            </div>
-                            <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                                {mensagens.map((msg: any) => {
-                                    const isMe = msg.id_remetente === myId;
-                                    return (
-                                        <div key={msg.id_mensagem} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                            <div className={`p-3 rounded-2xl text-xs max-w-[75%] ${isMe ? 'bg-blue-900 text-white' : 'bg-slate-100 text-slate-900'}`}>
-                                                {msg.conteudo}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <form onSubmit={handleEnviar} className="mt-4 flex gap-2 pt-3 border-t border-slate-100">
-                                <Input
-                                    value={conteudo}
-                                    onChange={(e) => setConteudo(e.target.value)}
-                                    placeholder="Digite sua resposta..."
-                                    className="rounded-xl bg-slate-50 border-slate-200"
-                                />
-                                <Button type="submit" className="bg-blue-900 hover:bg-blue-800 rounded-xl px-5">
-                                    <Send className="w-4 h-4 text-white" />
-                                </Button>
-                            </form>
-                        </>
-                    )}
-                </div>
+
+                {}
+                <PainelConversa
+                    estudanteSelecionado={estudanteSelecionado}
+                    republicaSelecionada={republicaSelecionada}
+                    mensagens={mensagens}
+                    myId={myId}
+                    idRepAtual={idRepAtual}
+                />
             </main>
         </div>
     );
