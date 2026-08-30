@@ -152,3 +152,31 @@ export const avaliarComprovanteMatricula = async (req: Request, res: Response): 
         res.status(500).json({ mensagem: error.message || "Erro interno" });
     }
 };
+
+export const listarInquilinosDaRepublica = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id_republica = Number(req.params.id_republica);
+
+        if (!Number.isInteger(id_republica)) {
+            res.status(400).json({ mensagem: "ID da república inválido." });
+            return;
+        }
+
+        const alugueis = await listarAlugueisRecebidosService(req.user?.id_usuario as number);
+
+
+        const moradoresAtivos = alugueis
+            .filter((a: any) => a.id_republica === id_republica && (a.status === "ativo" || a.status === "aceito"))
+            .map((a: any) => a.estudante)
+            .filter(Boolean);
+
+        const moradoresUnicos = Array.from(
+            new Map(moradoresAtivos.map((m: any) => [m.id_usuario, m])).values()
+        );
+
+        res.status(200).json(moradoresUnicos);
+    } catch (error) {
+        console.error("Erro ao listar inquilinos da república:", error);
+        res.status(500).json({ mensagem: "Erro interno do servidor." });
+    }
+};

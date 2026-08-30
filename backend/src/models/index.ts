@@ -16,6 +16,8 @@ import Notificacao from "./Notificacao.js";
 import { Mensagem } from "./Mensagem.js";
 import { Comprovante } from "./Comprovante.js";
 import { Manutencao } from "./Manutencao.js";
+import { Despesa } from "./Despesa.js";
+import { DespesaInquilino } from "./DespesaInquilino.js";
 
 Usuario.hasMany(Republica, {
     foreignKey: "id_usuario",
@@ -165,28 +167,35 @@ Aluguel.belongsTo(Republica, {
     foreignKey: "id_republica",
     as: "republica"
 });
+
 Avaliacao.belongsTo(Usuario, { foreignKey: "id_usuario", as: "usuario" });
 Usuario.hasMany(Avaliacao, { foreignKey: "id_usuario", as: "avaliacoes" });
 Avaliacao.belongsTo(Republica, { foreignKey: "id_republica", as: "republica" });
+
 Republica.hasMany(Avaliacao, { foreignKey: "id_republica", as: "avaliacoes" });
 Notificacao.belongsTo(Usuario, { foreignKey: "id_usuario", as: "usuario" });
 Usuario.hasMany(Notificacao, { foreignKey: "id_usuario", as: "notificacoes" });
+
 Usuario.hasMany(Mensagem, {
     foreignKey: "id_remetente",
     as: "mensagensEnviadas"
 });
+
 Mensagem.belongsTo(Usuario, {
     foreignKey: "id_remetente",
     as: "remetente"
 });
+
 Usuario.hasMany(Mensagem, {
     foreignKey: "id_destinatario",
     as: "mensagensRecebidas"
 });
+
 Mensagem.belongsTo(Usuario, {
     foreignKey: "id_destinatario",
     as: "destinatario"
 });
+
 Republica.hasMany(Mensagem, {
     foreignKey: "id_republica",
     as: "mensagens"
@@ -231,6 +240,14 @@ Manutencao.belongsTo(Usuario, {
     as: "usuario"
 });
 
+Republica.hasMany(Despesa, { foreignKey: "id_republica", as: "despesas" });
+Despesa.belongsTo(Republica, { foreignKey: "id_republica", as: "republica" });
+
+Despesa.hasMany(DespesaInquilino, { foreignKey: "id_despesa", as: "divisoes" });
+DespesaInquilino.belongsTo(Despesa, { foreignKey: "id_despesa", as: "despesa" });
+
+Usuario.hasMany(DespesaInquilino, { foreignKey: "id_usuario", as: "minhasDespesas" });
+DespesaInquilino.belongsTo(Usuario, { foreignKey: "id_usuario", as: "usuario" });
 
 export {
     Usuario,
@@ -250,5 +267,7 @@ export {
     Notificacao,
     Mensagem,
     Comprovante,
-    Manutencao
+    Manutencao,
+    Despesa,
+    DespesaInquilino
 };

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { ConfiguracaoUsuario, Usuario } from "../models/index.js";
 import { atualizarPerfilService } from "../services/usuarioService.js";
+
 export const obterPerfilEConfiguracoes = async (req: Request, res: Response): Promise<void> => {
     try {
         const id_usuario = req.user?.id_usuario;
@@ -27,6 +28,7 @@ export const obterPerfilEConfiguracoes = async (req: Request, res: Response): Pr
         res.status(500).json({ mensagem: "Erro interno do servidor." });
     }
 };
+
 export const atualizarConfiguracoesUsuario = async (req: Request, res: Response): Promise<void> => {
     try {
         const id_usuario = req.user?.id_usuario;
@@ -54,6 +56,7 @@ export const atualizarConfiguracoesUsuario = async (req: Request, res: Response)
         res.status(500).json({ mensagem: "Erro interno do servidor." });
     }
 };
+
 export const atualizarPerfilUsuario = async (req: Request, res: Response): Promise<void> => {
     try {
         const id_usuario = req.user?.id_usuario;
@@ -81,5 +84,18 @@ export const atualizarPerfilUsuario = async (req: Request, res: Response): Promi
         }
         console.error("Erro ao atualizar perfil:", error);
         res.status(500).json({ mensagem: "Erro interno do servidor." });
+    }
+};
+
+export const listarEstudantes = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const estudantes = await Usuario.findAll({
+            where: { tipo: "estudante" },
+            attributes: ["id_usuario", "nome", "email"],
+        });
+        res.status(200).json(estudantes);
+    } catch (error) {
+        console.error("Erro ao listar estudantes:", error);
+        res.status(500).json({ mensagem: "Erro ao buscar estudantes." });
     }
 };

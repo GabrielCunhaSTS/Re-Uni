@@ -16,6 +16,7 @@ import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import mensagemRoutes from "./routes/mensagemRoutes.js";
 import comprovanteRoutes from "./routes/comprovanteRoutes.js";
 import manutencaoRoutes from './routes/manutencaoRoutes.js';
+import despesaRoutes from "./routes/despesaRoutes.js";
 
 
 const app = express();
@@ -57,5 +58,6 @@ app.use("/api/notificacoes", notificacaoRoutes);
 app.use("/api", mensagemRoutes);
 app.use("/api", comprovanteRoutes);
 app.use('/api', manutencaoRoutes);
+app.use("/api/despesas", despesaRoutes);
 
 export default app;
