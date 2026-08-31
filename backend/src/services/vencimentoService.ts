@@ -7,21 +7,24 @@ export const verificarVencimentosAluguel = async () => {
     try {
         console.log("🔄 [CRON] Iniciando verificação de vencimentos de aluguel...");
 
-        const dataLimite = new Date();
-        dataLimite.setMonth(dataLimite.getMonth() - 1);
+        const dataLimiteCobranca = new Date();
+        dataLimiteCobranca.setMonth(dataLimiteCobranca.getMonth() - 1);
 
-        const alugueisAtivos = await Aluguel.findAll({
-            where: { status: "ativo" },
+        const dataLimiteExpulsao = new Date();
+        dataLimiteExpulsao.setDate(dataLimiteExpulsao.getDate() - 45);
+
+        const alugueisAnalisaveis = await Aluguel.findAll({
+            where: { status: { [Op.in]: ["ativo", "pendente_comprovante"] } },
             include: [
                 {
                     model: Republica,
                     as: "republica",
-                    attributes: ["nome"]
+                    attributes: ["id_usuario", "nome", "vagas_disponiveis"]
                 }
             ]
         });
 
-        for (const aluguel of alugueisAtivos) {
+        for (const aluguel of alugueisAnalisaveis) {
             const ultimoComprovante = await Comprovante.findOne({
                 where: {
                     id_aluguel: aluguel.id_aluguel,
@@ -30,22 +33,39 @@ export const verificarVencimentosAluguel = async () => {
                 order: [["criado_em", "DESC"]]
             }) as any;
 
-            let precisaCobrar = false;
+            const dataBase = ultimoComprovante
+                ? new Date(ultimoComprovante.criado_em)
+                : (aluguel.data_inicio ? new Date(aluguel.data_inicio) : new Date());
 
-            if (ultimoComprovante) {
-                if (new Date(ultimoComprovante.criado_em) <= dataLimite) {
-                    precisaCobrar = true;
+            const nomeRepublica = aluguel.republica?.nome || "sua república";
+
+            if (dataBase <= dataLimiteExpulsao && aluguel.status === "pendente_comprovante") {
+                await aluguel.update({ status: "encerrado" });
+
+                if (aluguel.republica) {
+                    await aluguel.republica.update({
+                        vagas_disponiveis: aluguel.republica.vagas_disponiveis + 1
+                    });
                 }
-            } else {
-                if (aluguel.data_inicio && new Date(aluguel.data_inicio) <= dataLimite) {
-                    precisaCobrar = true;
+
+                await criarNotificacaoInterna(
+                    aluguel.id_usuario,
+                    "❌ Desligamento da República",
+                    `Seu contrato na república ${nomeRepublica} foi encerrado automaticamente pelo sistema devido à falta de pagamento superior a 45 dias.`
+                );
+
+                if (aluguel.republica?.id_usuario) {
+                    await criarNotificacaoInterna(
+                        aluguel.republica.id_usuario,
+                        "⚠️ Contrato Encerrado por Inadimplência",
+                        `O sistema encerrou automaticamente o contrato do aluguel #${aluguel.id_aluguel} na república ${nomeRepublica} devido a atrasos superiores a 45 dias. A vaga foi liberada.`
+                    );
                 }
+
+                console.log(`❌ Aluguel ${aluguel.id_aluguel} encerrado por atraso de 45 dias.`);
             }
-
-            if (precisaCobrar) {
+            else if (dataBase <= dataLimiteCobranca && aluguel.status === "ativo") {
                 await aluguel.update({ status: "pendente_comprovante" });
-
-                const nomeRepublica = aluguel.republica?.nome || "sua república";
 
                 await criarNotificacaoInterna(
                     aluguel.id_usuario,
@@ -67,48 +87,4 @@ export const iniciarCronVencimentos = () => {
     cron.schedule("0 0 * * *", () => {
         verificarVencimentosAluguel();
     });
-};
-
-
-export const avaliarComprovanteService = async (id_comprovante: number, novoStatus: "aprovado" | "recusado", id_anunciante: number) => {
-    const comprovante = await Comprovante.findByPk(id_comprovante, {
-        include: [{
-            model: Aluguel,
-            as: "aluguel",
-            include: [{ model: Republica, as: "republica" }]
-        }]
-    }) as any;
-
-    if (!comprovante) throw new Error("COMPROVANTE_NAO_ENCONTRADO");
-
-    if (comprovante.aluguel.republica.id_usuario !== id_anunciante) {
-        throw new Error("NAO_AUTORIZADO");
-    }
-
-
-    await comprovante.update({ status: novoStatus });
-
-
-    if (novoStatus === "aprovado") {
-
-
-        await Aluguel.update(
-            { status: "ativo" },
-            { where: { id_aluguel: comprovante.id_aluguel } }
-        );
-
-        await criarNotificacaoInterna(
-            comprovante.aluguel.id_usuario,
-            "Pagamento Aprovado! ✅",
-            `Seu comprovante de pagamento da república ${comprovante.aluguel.republica.nome} foi aprovado e seu status voltou para ativo.`
-        );
-    } else if (novoStatus === "recusado") {
-        await criarNotificacaoInterna(
-            comprovante.aluguel.id_usuario,
-            "Comprovante Recusado ❌",
-            `O anunciante da república ${comprovante.aluguel.republica.nome} recusou seu último comprovante. Por favor, verifique e envie novamente.`
-        );
-    }
-
-    return comprovante;
 };

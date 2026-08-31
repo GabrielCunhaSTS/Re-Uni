@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home, ArrowLeft, User, Lock, Save, HelpCircle } from "lucide-react";
+import { Home, ArrowLeft, User, Lock, Save, HelpCircle, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -14,6 +14,7 @@ export default function PerfilPage() {
     const [usuario, setUsuario] = useState<any>(null);
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
+    const [chavePix, setChavePix] = useState("");
     const [senhaAtual, setSenhaAtual] = useState("");
     const [novaSenha, setNovaSenha] = useState("");
 
@@ -28,15 +29,31 @@ export default function PerfilPage() {
         setUsuario(userData);
         setNome(userData.nome || "");
         setEmail(userData.email || "");
+
+
+        api.get("/usuarios/configuracoes")
+            .then((res) => {
+                if (res.data?.configuracao?.chave_pix) {
+                    setChavePix(res.data.configuracao.chave_pix);
+                }
+            })
+            .catch(() => {});
     }, [router]);
 
     const atualizarPerfilMutation = useMutation({
         mutationFn: async (dados: any) => {
-            const response = await api.put("/perfil", dados);
-            return response.data;
+
+            const responsePerfil = await api.put("/perfil", dados.perfil);
+
+
+            if (usuario?.tipo === "anunciante") {
+                await api.put("/usuarios/configuracoes", { chave_pix: dados.chavePix });
+            }
+
+            return responsePerfil.data;
         },
         onSuccess: (data) => {
-            toast.success("Perfil atualizado com sucesso!");
+            toast.success("Perfil e configurações atualizados com sucesso!");
             if (data.usuario) {
                 localStorage.setItem("@ReUni:user", JSON.stringify(data.usuario));
                 setUsuario(data.usuario);
@@ -62,12 +79,16 @@ export default function PerfilPage() {
             return;
         }
 
-        const payload: any = { nome, email };
+        const payloadPerfil: any = { nome, email };
         if (novaSenha) {
-            payload.senhaAtual = senhaAtual;
-            payload.novaSenha = novaSenha;
+            payloadPerfil.senhaAtual = senhaAtual;
+            payloadPerfil.novaSenha = novaSenha;
         }
-        atualizarPerfilMutation.mutate(payload);
+
+        atualizarPerfilMutation.mutate({
+            perfil: payloadPerfil,
+            chavePix: chavePix
+        });
     }
 
     if (!usuario) return null;
@@ -125,7 +146,23 @@ export default function PerfilPage() {
                                     className="rounded-xl bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"
                                 />
                             </div>
+                            {usuario.tipo === "anunciante" && (
+                                <div className="pt-2">
+                                    <label className="text-xs font-bold text-slate-600 block mb-1 flex items-center gap-1.5">
+                                        <QrCode className="w-4 h-4 text-emerald-600" /> Chave Pix para Recebimento de Aluguéis
+                                    </label>
+                                    <Input
+                                        type="text"
+                                        placeholder="Ex: CPF, E-mail, Telefone ou Chave Aleatória"
+                                        value={chavePix}
+                                        onChange={(e) => setChavePix(e.target.value)}
+                                        className="rounded-xl bg-slate-50 border-slate-200"
+                                    />
+                                    <p className="text-[11px] text-slate-400 mt-1">Essa chave será utilizada para vincular os recebimentos automáticos dos moradores.</p>
+                                </div>
+                            )}
                         </div>
+
                         <div className="space-y-4 pt-4 border-t border-slate-100">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">

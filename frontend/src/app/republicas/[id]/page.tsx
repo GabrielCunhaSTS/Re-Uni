@@ -4,7 +4,7 @@ import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, MessageCircle } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
@@ -13,15 +13,17 @@ import { RepublicaMapa } from "@/components/detalhes/RepublicaMapa";
 import { RepublicaSidebarAnunciante } from "@/components/detalhes/RepublicaSidebarAnunciante";
 import { RepublicaComentarios } from "@/components/RepublicaComentarios";
 import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
-import { EnviarComprovanteModal } from "@/components/estudante/EnviarComprovanteModal";
 import { PainelManutencao } from "@/components/manutencao/PainelManutencao";
 import { EnviarMatriculaModal } from "@/components/estudante/EnviarMatriculaModal";
+import { ModalPagamentoPix } from "@/components/estudante/ModalPagamentoPix";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
     const params = useParams();
     const id = params?.id;
     const [token, setToken] = useState<string | null>(null);
+
+    const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("@ReUni:token");
@@ -168,8 +170,17 @@ export default function DetalhesRepublicaPage() {
                             idRepublica={Number(id)}
                         />
 
-                       {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
-                            <EnviarComprovanteModal idAluguel={meuAluguel.id_aluguel} />
+                        {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
+                            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                                <h4 className="font-bold text-blue-950 text-sm">Fatura / Aluguel</h4>
+                                <p className="text-xs text-slate-500">Realize o pagamento da sua mensalidade instantaneamente via PIX.</p>
+                                <Button
+                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
+                                    onClick={() => setIsPixModalOpen(true)}
+                                >
+                                    Pagar com PIX
+                                </Button>
+                            </div>
                         )}
 
                         {temAluguelAtivo && meuAluguel?.status_matricula !== "aprovado" && meuAluguel?.id_aluguel && (
@@ -178,6 +189,16 @@ export default function DetalhesRepublicaPage() {
                     </div>
                 </div>
             </main>
+
+            {isPixModalOpen && meuAluguel && (
+                <ModalPagamentoPix
+                    aluguel={{
+                        id_aluguel: meuAluguel.id_aluguel,
+                        valor: Number(republica.valor_mensal || republica.valor || 0)
+                    }}
+                    onClose={() => setIsPixModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

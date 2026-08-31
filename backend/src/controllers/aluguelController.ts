@@ -7,6 +7,8 @@ import {
     enviarComprovanteMatriculaService,
     avaliarComprovanteMatriculaService
 } from "../services/aluguelService.js";
+import { Aluguel, Usuario } from "../models/index.js";
+import { Op } from "sequelize";
 
 export const solicitarAluguel = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -162,19 +164,27 @@ export const listarInquilinosDaRepublica = async (req: Request, res: Response): 
             return;
         }
 
-        const alugueis = await listarAlugueisRecebidosService(req.user?.id_usuario as number);
+
+        const alugueisAtivos = await Aluguel.findAll({
+            where: {
+                id_republica: id_republica,
+                status: { [Op.in]: ["ativo", "aceito"] }
+            },
+            include: [
+                {
+                    model: Usuario,
+                    as: "usuario",
+                    attributes: ["id_usuario", "nome", "email", "telefone"]
+                }
+            ]
+        });
 
 
-        const moradoresAtivos = alugueis
-            .filter((a: any) => a.id_republica === id_republica && (a.status === "ativo" || a.status === "aceito"))
-            .map((a: any) => a.estudante)
+        const moradores = alugueisAtivos
+            .map((aluguel: any) => aluguel.usuario)
             .filter(Boolean);
 
-        const moradoresUnicos = Array.from(
-            new Map(moradoresAtivos.map((m: any) => [m.id_usuario, m])).values()
-        );
-
-        res.status(200).json(moradoresUnicos);
+        res.status(200).json(moradores);
     } catch (error) {
         console.error("Erro ao listar inquilinos da república:", error);
         res.status(500).json({ mensagem: "Erro interno do servidor." });

@@ -1,23 +1,16 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const enviarEmailRecuperacao = async (email: string, token: string) => {
     const linkRecuperacao = `http://localhost:3000/resetar-senha?token=${token}`;
 
-    const mailOptions = {
-        from: `"Equipe ReUni" <suporte@reuni.com>`,
-        to: email,
+    await resend.emails.send({
+        from: "Equipe ReUni <reuni.suporte@gmail.com>",
+        to: [email],
         subject: "Recuperação de Senha - ReUni",
         html: `
             <div style="background-color: #f8fafc; padding: 40px 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155;">
@@ -62,7 +55,5 @@ export const enviarEmailRecuperacao = async (email: string, token: string) => {
                 </table>
             </div>
         `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
 };
