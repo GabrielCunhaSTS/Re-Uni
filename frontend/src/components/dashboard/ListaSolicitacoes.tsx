@@ -1,12 +1,38 @@
 "use client";
-import { MessageSquare, Sparkles, CheckCircle, XCircle } from "lucide-react";
+import { MessageSquare, Sparkles, CheckCircle, XCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/axios";
+import { toast } from "sonner";
+
 interface ListaSolicitacoesProps {
     solicitacoes: any[];
     loading: boolean;
     onAtualizarStatus: (idAluguel: number, status: string) => void;
 }
+
 export function ListaSolicitacoes({ solicitacoes, loading, onAtualizarStatus }: ListaSolicitacoesProps) {
+    const router = useRouter();
+
+    async function handleGerarContrato(idAluguel: number) {
+        try {
+            toast.loading("Gerando contrato de locação...", { id: "pdf-load" });
+            const response = await api.get(`/alugueis/${idAluguel}/contrato`, {
+                responseType: "blob",
+            });
+
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `Contrato_Locacao_${idAluguel}.pdf`;
+            link.click();
+
+            toast.success("Contrato gerado com sucesso!", { id: "pdf-load" });
+        } catch (error) {
+            toast.error("Erro ao gerar o contrato em PDF.", { id: "pdf-load" });
+        }
+    }
+
     return (
         <div className="space-y-6">
             <div>
@@ -42,20 +68,25 @@ export function ListaSolicitacoes({ solicitacoes, loading, onAtualizarStatus }: 
                             </div>
                         </div>
                         <div className="flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-slate-100">
-                            <Button
+                           <Button
                                 variant="outline"
                                 size="sm"
                                 className="rounded-xl border-slate-200 text-blue-900 hover:bg-blue-50"
-                                onClick={() => alert("Funcionalidade de chat integrada em breve!")}
+                                onClick={() => router.push(`/dashboard/mensagens?estudanteId=${solicitacao.usuario.id_usuario}&republicaId=${solicitacao.republica.id_republica}`)}
                             >
                                 <MessageSquare className="w-4 h-4 mr-1.5" /> Chat
                             </Button>
-                            <button
-                                onClick={() => alert("Módulo de gestão extra (Em breve)")}
-                                className="p-2 text-slate-400 hover:text-blue-900 hover:bg-slate-50 rounded-xl border border-slate-200 transition-colors"
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                title="Baixar Contrato Digital"
+                                onClick={() => handleGerarContrato(solicitacao.id_aluguel)}
+                                className="rounded-xl border-slate-200 text-emerald-700 hover:bg-emerald-50 gap-1.5 font-bold"
                             >
-                                <Sparkles className="w-4 h-4" />
-                            </button>
+                                <FileText className="w-4 h-4" /> Contrato
+                            </Button>
+
                             {solicitacao.status === 'pendente' && (
                                 <>
                                     <Button

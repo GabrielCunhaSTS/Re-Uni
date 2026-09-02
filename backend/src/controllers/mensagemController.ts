@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { enviarMensagemService, listarConversaService, listarContatosChatService} from "../services/mensagemService.js";
+import { enviarMensagemService, listarConversaService, listarContatosChatService, contarMensagensNaoLidasService} from "../services/mensagemService.js";
 export const enviarMensagem = async (req: Request, res: Response): Promise<void> => {
     try {
         const id_remetente = req.user?.id_usuario;
@@ -45,6 +45,22 @@ export const listarContatosChat = async (req: Request, res: Response): Promise<v
         res.status(200).json(contatos);
     } catch (error) {
         console.error("Erro ao listar contatos do chat:", error);
+        res.status(500).json({ mensagem: "Erro interno do servidor." });
+    }
+};
+
+export const listarNaoLidas = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id_usuario = req.user?.id_usuario;
+        if (!id_usuario) {
+            res.status(401).json({ mensagem: "Não autorizado." });
+            return;
+        }
+
+        const contagem = await contarMensagensNaoLidasService(Number(id_usuario));
+        res.status(200).json(contagem);
+    } catch (error) {
+        console.error("Erro ao contar mensagens não lidas:", error);
         res.status(500).json({ mensagem: "Erro interno do servidor." });
     }
 };

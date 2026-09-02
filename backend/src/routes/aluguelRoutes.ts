@@ -6,7 +6,9 @@ import {
     listarAlugueisRecebidos,
     enviarComprovanteMatricula,
     avaliarComprovanteMatricula,
-    listarInquilinosDaRepublica
+    listarInquilinosDaRepublica,
+    gerarContratoLocacaoPdf,
+
 } from "../controllers/aluguelController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { uploadMiddleware } from "../middlewares/uploadMiddleware.js";
@@ -25,6 +27,7 @@ router.post(
 );
 router.patch("/alugueis/:id_aluguel/matricula/avaliacao", authMiddleware, avaliarComprovanteMatricula);
 router.get("/republicas/:id_republica/inquilinos", authMiddleware, listarInquilinosDaRepublica);
+router.get("/alugueis/:id_aluguel/contrato", authMiddleware, gerarContratoLocacaoPdf);
 
 export default router;
 

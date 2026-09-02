@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { X, UserMinus } from "lucide-react";
+import { X, UserMinus, CheckCircle2, Banknote } from "lucide-react";
 import { api } from "@/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,16 @@ export function ModalGestaoInquilinos({ imovelSelecionado, onClose }: ModalGesta
             onClose();
         } catch (error) {
             toast.error("Erro ao processar avaliação.");
+        }
+    }
+
+    async function handleDarBaixaDinheiro(idAluguel: number) {
+        try {
+            await api.patch(`/pagamentos/${idAluguel}/baixa-manual`);
+            toast.success("Pagamento em dinheiro confirmado com sucesso!");
+            queryClient.invalidateQueries({ queryKey: ["dashboard-financeiro"] });
+        } catch (error) {
+            toast.error("Erro ao registrar baixa no pagamento.");
         }
     }
 
@@ -61,7 +71,7 @@ export function ModalGestaoInquilinos({ imovelSelecionado, onClose }: ModalGesta
     return (
         <>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                <div className="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="bg-white w-full max-w-lg rounded-3xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                         <div>
                             <h3 className="text-lg font-extrabold text-blue-950">Gestão de Moradores</h3>
@@ -77,7 +87,7 @@ export function ModalGestaoInquilinos({ imovelSelecionado, onClose }: ModalGesta
                         </Button>
                     </div>
 
-                    <div className="p-6 max-h-[60vh] overflow-y-auto space-y-3 bg-slate-50/50">
+                    <div className="p-6 max-h-[65vh] overflow-y-auto space-y-4 bg-slate-50/50">
                         {imovelSelecionado.inquilinos && imovelSelecionado.inquilinos.length > 0 ? (
                             imovelSelecionado.inquilinos.map((inquilino: any, index: number) => (
                                 <div key={index} className="bg-white border border-slate-200 p-4 rounded-2xl flex flex-col gap-3 shadow-sm">
@@ -135,7 +145,24 @@ export function ModalGestaoInquilinos({ imovelSelecionado, onClose }: ModalGesta
                                         )}
                                     </div>
 
-                                    <div className="pt-3 border-t border-slate-100 flex justify-end">
+                                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between bg-slate-50 p-3 rounded-xl">
+                                        <div className="flex items-center gap-2">
+                                            <Banknote className="w-4 h-4 text-emerald-600" />
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-700">Mensalidade Atual</p>
+                                                <p className="text-[10px] text-slate-500">Confirme caso o aluno tenha pago em mãos</p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            className="bg-blue-900 hover:bg-blue-800 text-white text-xs rounded-xl h-8 px-3 font-bold gap-1.5 shadow-sm"
+                                            onClick={() => handleDarBaixaDinheiro(inquilino.id_aluguel)}
+                                        >
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> Marcar como Pago
+                                        </Button>
+                                    </div>
+
+                                    <div className="pt-2 flex justify-end">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -150,7 +177,7 @@ export function ModalGestaoInquilinos({ imovelSelecionado, onClose }: ModalGesta
                             ))
                         ) : (
                             <p className="text-center text-slate-500 text-sm py-4">
-                                Nenhum dado detalhado encontrado.
+                                Nenhum morador ativo encontrado nesta república.
                             </p>
                         )}
                     </div>

@@ -4,7 +4,7 @@ import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
@@ -15,7 +15,7 @@ import { RepublicaComentarios } from "@/components/RepublicaComentarios";
 import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
 import { PainelManutencao } from "@/components/manutencao/PainelManutencao";
 import { EnviarMatriculaModal } from "@/components/estudante/EnviarMatriculaModal";
-import { ModalPagamentoPix } from "@/components/estudante/ModalPagamentoPix";
+import { ModalOpcoesPagamento } from "@/components/estudante/ModalPagamentoPix";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
@@ -103,19 +103,16 @@ export default function DetalhesRepublicaPage() {
     }
 
     const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
-
     const statusAluguel = meuAluguel?.status?.toLowerCase();
-
     const temAluguelAtivo = ["ativo", "aprovado"].includes(statusAluguel);
-
     const isPendente = statusAluguel === "pendente";
-
     const isPendenteComprovante = statusAluguel === "pendente_comprovante";
-
     const podeVerPainelManutencao = temAluguelAtivo || isPendenteComprovante;
 
+    const mesReferenciaAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
     return (
-        <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20">
+        <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20 relative">
             <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
                     <Button onClick={() => router.push("/")} variant="ghost" className="rounded-xl p-2">
@@ -173,31 +170,45 @@ export default function DetalhesRepublicaPage() {
                         {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
                             <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
                                 <h4 className="font-bold text-blue-950 text-sm">Fatura / Aluguel</h4>
-                                <p className="text-xs text-slate-500">Realize o pagamento da sua mensalidade instantaneamente via PIX.</p>
+                                <p className="text-xs text-slate-500">Realize o pagamento da sua mensalidade via PIX ou em dinheiro.</p>
                                 <Button
                                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
                                     onClick={() => setIsPixModalOpen(true)}
                                 >
-                                    Pagar com PIX
+                                    Realizar Pagamento
                                 </Button>
                             </div>
                         )}
 
-                        {temAluguelAtivo && meuAluguel?.status_matricula !== "aprovado" && meuAluguel?.id_aluguel && (
-                            <EnviarMatriculaModal idAluguel={meuAluguel.id_aluguel} />
+                        {temAluguelAtivo && meuAluguel?.status_matricula === "aprovado" && meuAluguel?.id_aluguel && (
+                            <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-1">
+                                <p className="text-xs font-bold text-emerald-800">Matrícula Validada ✅</p>
+                                <p className="text-[11px] text-emerald-700/80">
+                                    Seu comprovante de matrícula está aprovado. Será necessário revalidar o vínculo estudantil a cada 6 meses.
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
             </main>
 
             {isPixModalOpen && meuAluguel && (
-                <ModalPagamentoPix
-                    aluguel={{
-                        id_aluguel: meuAluguel.id_aluguel,
-                        valor: Number(republica.valor_mensal || republica.valor || 0)
-                    }}
-                    onClose={() => setIsPixModalOpen(false)}
-                />
+                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="relative w-full max-w-sm">
+                        <button
+                            onClick={() => setIsPixModalOpen(false)}
+                            className="absolute -top-12 right-0 text-white hover:text-slate-200 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <ModalOpcoesPagamento
+                            idAluguel={meuAluguel.id_aluguel}
+                            valor={Number(republica.valor_mensal || republica.valor || 0)}
+                            mesReferencia={mesReferenciaAtual.charAt(0).toUpperCase() + mesReferenciaAtual.slice(1)}
+                        />
+                    </div>
+                </div>
             )}
         </div>
     );

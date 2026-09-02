@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, DollarSign, Home, Users, TrendingUp } from "lucide-react";
-import { GerenciarComprovantes } from "@/components/anunciante/GerenciarComprovantes";
 import { ModalGestaoInquilinos } from "@/components/anunciante/ModalGestaoInquilinos";
 
 export default function DashboardFinanceiroPage() {
@@ -109,19 +108,8 @@ export default function DashboardFinanceiroPage() {
                         </table>
                     </div>
                 </div>
-
-                <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-blue-950">Aprovação de Pagamentos</h3>
-                    {financeiro?.detalhesImoveis?.map((imovel: any) => (
-                        <div key={`comp-${imovel.id_republica}`} className="space-y-2">
-                            <h4 className="text-sm font-bold text-slate-600">República: {imovel.nome}</h4>
-                            <GerenciarComprovantes idRepublica={imovel.id_republica} />
-                        </div>
-                    ))}
-                </div>
             </main>
 
-            {}
             <ModalGestaoInquilinos
                 imovelSelecionado={imovelSelecionado}
                 onClose={() => setImovelSelecionado(null)}

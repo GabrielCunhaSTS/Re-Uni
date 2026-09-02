@@ -17,6 +17,7 @@ import mensagemRoutes from "./routes/mensagemRoutes.js";
 import manutencaoRoutes from './routes/manutencaoRoutes.js';
 import despesaRoutes from "./routes/despesaRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
+import pagamentoRoutes from "./routes/pagamentoRoutes.js";
 
 
 const app = express();
@@ -59,5 +60,6 @@ app.use("/api", mensagemRoutes);
 app.use('/api', manutencaoRoutes);
 app.use("/api/despesas", despesaRoutes);
 app.use("/api", webhookRoutes);
+app.use("/api/pagamentos", pagamentoRoutes);
 
 export default app;

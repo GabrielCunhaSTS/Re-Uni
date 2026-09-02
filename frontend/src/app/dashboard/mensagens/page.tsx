@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,14 @@ import { PainelConversa } from "@/components/mensagens/PainelConversa";
 
 export default function DashboardMensagensPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
     const [republicaSelecionada, setRepublicaSelecionada] = useState<any>(null);
     const [estudanteSelecionado, setEstudanteSelecionado] = useState<any>(null);
     const [myId, setMyId] = useState<number | null>(null);
+
+    const estudanteIdUrl = searchParams.get("estudanteId");
+    const republicaIdUrl = searchParams.get("republicaId");
 
     useEffect(() => {
         const userStr = localStorage.getItem("@ReUni:user");
@@ -33,6 +38,24 @@ export default function DashboardMensagensPage() {
         }
     });
 
+    const { data: naoLidasGeral = {} } = useQuery({
+        queryKey: ["mensagens-nao-lidas-geral"],
+        queryFn: async () => {
+            const response = await api.get("/mensagens/nao-lidas");
+            return response.data;
+        },
+        refetchInterval: 3000
+    });
+
+    useEffect(() => {
+        if (republicaIdUrl && republicas.length > 0 && !republicaSelecionada) {
+            const repEncontrada = republicas.find((r: any) => (r.id_republica || r.id) === Number(republicaIdUrl));
+            if (repEncontrada) {
+                setRepublicaSelecionada(repEncontrada);
+            }
+        }
+    }, [republicas, republicaIdUrl, republicaSelecionada]);
+
     const idRepAtual = republicaSelecionada?.id_republica || republicaSelecionada?.id;
 
     const { data: contatos = [] } = useQuery({
@@ -41,8 +64,18 @@ export default function DashboardMensagensPage() {
             const response = await api.get(`/mensagens/contatos?id_republica=${idRepAtual}`);
             return response.data;
         },
-        enabled: !!idRepAtual
+        enabled: !!idRepAtual,
+        refetchInterval: 3000
     });
+
+    useEffect(() => {
+        if (estudanteIdUrl && contatos.length > 0 && !estudanteSelecionado) {
+            const estudanteEncontrado = contatos.find((c: any) => c.id_usuario === Number(estudanteIdUrl));
+            if (estudanteEncontrado) {
+                setEstudanteSelecionado(estudanteEncontrado);
+            }
+        }
+    }, [contatos, estudanteIdUrl, estudanteSelecionado]);
 
     const { data: mensagens = [] } = useQuery({
         queryKey: ["mensagens-anunciante", idRepAtual, estudanteSelecionado?.id_usuario],
@@ -71,22 +104,32 @@ export default function DashboardMensagensPage() {
             </header>
 
             <main className="max-w-6xl mx-auto px-6 pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 h-[75vh]">
-                {}
+
                 <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm overflow-y-auto space-y-4">
                     <h3 className="font-bold text-blue-950 text-sm uppercase tracking-wider">Suas Repúblicas</h3>
+
                     {republicas.map((rep: any) => {
                         const repId = rep.id_republica || rep.id;
                         const isSelected = idRepAtual === repId;
+                        const qtdNaoLidas = naoLidasGeral[repId] || 0;
+
                         return (
                             <div
                                 key={repId}
                                 onClick={() => { setRepublicaSelecionada(rep); setEstudanteSelecionado(null); }}
-                                className={`p-3 rounded-2xl cursor-pointer border transition-all ${isSelected ? 'bg-blue-50 border-blue-200 font-bold text-blue-950' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
+                                className={`p-3 rounded-2xl cursor-pointer border transition-all flex items-center justify-between ${isSelected ? 'bg-blue-50 border-blue-200 font-bold text-blue-950' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
                             >
                                 <p className="text-sm">{rep.nome}</p>
+
+                                {qtdNaoLidas > 0 && (
+                                    <div className="bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full shadow-sm">
+                                        {qtdNaoLidas}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
+
                     {republicaSelecionada && (
                         <div className="pt-4 border-t border-slate-100 space-y-3">
                             <h3 className="font-bold text-blue-950 text-sm uppercase tracking-wider">Interessados (Mensagens)</h3>
@@ -99,10 +142,18 @@ export default function DashboardMensagensPage() {
                                         <div
                                             key={estudante.id_usuario}
                                             onClick={() => setEstudanteSelecionado(estudante)}
-                                            className={`p-3 rounded-2xl cursor-pointer border transition-all ${isSelected ? 'bg-blue-900 text-white font-bold' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
+                                            className={`p-3 rounded-2xl cursor-pointer border transition-all flex items-center justify-between ${isSelected ? 'bg-blue-900 text-white font-bold' : 'border-slate-100 hover:bg-slate-50 text-slate-700'}`}
                                         >
-                                            <p className="text-sm">{estudante.nome}</p>
-                                            <span className="text-[10px] opacity-70">{estudante.email}</span>
+                                            <div>
+                                                <p className="text-sm">{estudante.nome}</p>
+                                                <span className={`text-[10px] ${isSelected ? 'opacity-70' : 'text-slate-500'}`}>{estudante.email}</span>
+                                            </div>
+
+                                            {estudante.naoLidas > 0 && (
+                                                <div className="bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full shadow-sm">
+                                                    {estudante.naoLidas}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })
@@ -111,7 +162,6 @@ export default function DashboardMensagensPage() {
                     )}
                 </div>
 
-                {}
                 <PainelConversa
                     estudanteSelecionado={estudanteSelecionado}
                     republicaSelecionada={republicaSelecionada}
