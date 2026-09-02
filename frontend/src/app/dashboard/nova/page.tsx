@@ -10,11 +10,13 @@ import { FormInformacoesBasicas } from "@/components/nova-republica/FormInformac
 import { FormLocalizacao } from "@/components/nova-republica/FormLocalizacao";
 import { FormComodidades } from "@/components/nova-republica/FormComodidades";
 import { FormImagens } from "@/components/nova-republica/FormImagens";
+
 export default function NovaRepublicaPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [imagensExistentes, setImagensExistentes] = useState<{ url: string }[]>([]);
     const [novosArquivos, setNovosArquivos] = useState<File[]>([]);
+
     const [form, setForm] = useState({
         nome: "",
         descricao: "",
@@ -39,6 +41,7 @@ export default function NovaRepublicaPage() {
         possui_area_lazer: true,
         aceita_pets: false,
     });
+
     async function handleCepBlur(e: React.FocusEvent<HTMLInputElement>) {
         const cepLimpo = e.target.value.replace(/\D/g, "");
         if (cepLimpo.length !== 8) return;
@@ -57,21 +60,37 @@ export default function NovaRepublicaPage() {
             console.error("Erro ao buscar CEP:", error);
         }
     }
+
     const criarMutation = useMutation({
         mutationFn: async () => {
+
             let latitude = -23.9608;
             let longitude = -46.3336;
+
             try {
-                const queryGeo = encodeURIComponent(`${form.endereco},${form.numero} - ${form.bairro},${form.cidade}, Brasil`);
-                const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryGeo}`);
+
+                const queryRuaCidade = encodeURIComponent(`${form.endereco}, ${form.cidade}, Brasil`);
+                const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryRuaCidade}&limit=1`);
                 const dataGeo = await resGeo.json();
+
                 if (dataGeo && dataGeo.length > 0) {
                     latitude = parseFloat(dataGeo[0].lat);
                     longitude = parseFloat(dataGeo[0].lon);
+                } else if (form.cep) {
+
+                    const cepLimpo = form.cep.replace(/\D/g, "");
+                    const resGeoCep = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${cepLimpo}&country=Brazil&limit=1`);
+                    const dataGeoCep = await resGeoCep.json();
+
+                    if (dataGeoCep && dataGeoCep.length > 0) {
+                        latitude = parseFloat(dataGeoCep[0].lat);
+                        longitude = parseFloat(dataGeoCep[0].lon);
+                    }
                 }
             } catch (err) {
-                console.warn("Mantendo coordenadas padrão.", err);
+                console.warn("Falha na geolocalização. Mantendo coordenadas padrão.", err);
             }
+
             const payload = {
                 nome: form.nome.trim(),
                 descricao: form.descricao?.trim() || "",
@@ -102,9 +121,11 @@ export default function NovaRepublicaPage() {
                     aceita_pets: Boolean(form.aceita_pets),
                 }
             };
+
             const response = await api.post("/republicas", payload);
             const dadosResposta = response.data.republica || response.data;
             const idRepublica = dadosResposta.id_republica || dadosResposta.id;
+
             if (novosArquivos.length > 0 && idRepublica) {
                 const formData = new FormData();
                 novosArquivos.forEach((file) => {
@@ -129,6 +150,7 @@ export default function NovaRepublicaPage() {
             toast.error(err.response?.data?.mensagem || "Erro ao cadastrar república.");
         }
     });
+
     return (
         <div className="min-h-screen bg-slate-50/60 pb-20 text-slate-900">
             <NovaRepublicaHeader />

@@ -4,10 +4,12 @@ import dynamic from "next/dynamic";
 import { api } from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+
 const MapComponents = dynamic(
     async () => {
         const L = (await import("leaflet"));
         const ReactLeaflet = await import("react-leaflet");
+
         const customIcon = L.icon({
             iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
             shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -15,17 +17,37 @@ const MapComponents = dynamic(
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
         });
-        function MapInvalidator({ center }: { center: [number, number] }) {
+
+
+        function FitBounds({ republicas }: { republicas: any[] }) {
+            const map = ReactLeaflet.useMap();
+
+            useEffect(() => {
+                const markers = republicas
+                    .filter(rep => rep.localizacao?.latitude && rep.localizacao?.longitude)
+                    .map(rep => [Number(rep.localizacao.latitude), Number(rep.localizacao.longitude)] as [number, number]);
+
+                if (markers.length > 0) {
+                    const bounds = L.latLngBounds(markers);
+
+                    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                }
+            }, [map, republicas]);
+
+            return null;
+        }
+
+        function MapInvalidator() {
             const map = ReactLeaflet.useMap();
             useEffect(() => {
-                map.setView(center, 13);
                 const timer = setTimeout(() => {
                     map.invalidateSize();
                 }, 200);
                 return () => clearTimeout(timer);
-            }, [map, center]);
+            }, [map]);
             return null;
         }
+
         return function LeafletMap({ republicas, router, userCenter }: { republicas: any[]; router: any; userCenter: [number, number] }) {
             return (
                 <ReactLeaflet.MapContainer
@@ -34,15 +56,19 @@ const MapComponents = dynamic(
                     scrollWheelZoom={false}
                     style={{ width: "100%", height: "100%" }}
                 >
-                    <MapInvalidator center={userCenter} />
+                    <MapInvalidator />
+                    <FitBounds republicas={republicas} /> {}
+
                     <ReactLeaflet.TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
+
                     {republicas.map((rep: any) => {
                         const lat = rep.localizacao?.latitude;
                         const lng = rep.localizacao?.longitude;
                         if (!lat || !lng) return null;
+
                         return (
                             <ReactLeaflet.Marker
                                 key={rep.id_republica || rep.id}
@@ -71,11 +97,13 @@ const MapComponents = dynamic(
     },
     { ssr: false }
 );
+
 export function MapaGeral() {
     const router = useRouter();
     const [republicas, setRepublicas] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [center, setCenter] = useState<[number, number]>([-23.9608, -46.3331]);
+
     useEffect(() => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
@@ -90,6 +118,7 @@ export function MapaGeral() {
                 { timeout: 10000 }
             );
         }
+
         async function fetchRepublicas() {
             try {
                 const response = await api.get("/republicas");
@@ -103,6 +132,7 @@ export function MapaGeral() {
         }
         fetchRepublicas();
     }, []);
+
     return (
         <div className="w-full h-[500px] rounded-3xl overflow-hidden border border-slate-200 shadow-sm relative z-0">
             {loading ? (
