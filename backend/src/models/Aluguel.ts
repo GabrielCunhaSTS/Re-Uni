@@ -14,6 +14,7 @@ export interface AluguelAttributes {
     comprovante_matricula_url: string | null;
     status_matricula: "pendente" | "em_analise" | "aprovado" | "rejeitado";
     data_aprovacao_matricula: Date | null;
+    data_ultimo_pagamento: Date | null;
 
     criado_em?: Date;
     atualizado_em?: Date;
@@ -22,7 +23,7 @@ export interface AluguelAttributes {
 export interface AluguelCreationAttributes
     extends Optional<
         AluguelAttributes,
-        "id_aluguel" | "status" | "data_inicio" | "data_fim" | "valor" | "comprovante_matricula_url" | "status_matricula" | "data_aprovacao_matricula" | "criado_em" | "atualizado_em"
+        "id_aluguel" | "status" | "data_inicio" | "data_fim" | "valor" | "comprovante_matricula_url" | "status_matricula" | "data_aprovacao_matricula" | "data_ultimo_pagamento" | "criado_em" | "atualizado_em"
     > {}
 
 class Aluguel
@@ -40,6 +41,7 @@ class Aluguel
     declare comprovante_matricula_url: string | null;
     declare status_matricula: "pendente" | "em_analise" | "aprovado" | "rejeitado";
     declare data_aprovacao_matricula: Date | null;
+    declare data_ultimo_pagamento: Date | null;
 
     declare readonly criado_em: Date;
     declare readonly atualizado_em: Date;
@@ -100,6 +102,10 @@ Aluguel.init(
             allowNull: false
         },
         data_aprovacao_matricula: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        data_ultimo_pagamento: {
             type: DataTypes.DATE,
             allowNull: true
         }

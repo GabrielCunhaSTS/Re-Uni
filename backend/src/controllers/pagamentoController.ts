@@ -107,7 +107,11 @@ export const darBaixaManualDinheiro = async (req: Request, res: Response): Promi
             return;
         }
 
-        aluguel.status = "ativo";
+        aluguel.data_ultimo_pagamento = new Date();
+        if (aluguel.status === "pendente") {
+            aluguel.status = "ativo";
+        }
+
         await aluguel.save();
 
         await Notificacao.create({

@@ -42,7 +42,8 @@ export const obterDadosFinanceirosService = async (id_anunciante: number) => {
                 nome: a.usuario?.nome || "Nome não informado",
                 email: a.usuario?.email || "Sem e-mail",
                 status_matricula: a.status_matricula,
-                comprovante_matricula_url: a.comprovante_matricula_url
+                comprovante_matricula_url: a.comprovante_matricula_url,
+                data_ultimo_pagamento: a.data_ultimo_pagamento
             }))
         });
     });

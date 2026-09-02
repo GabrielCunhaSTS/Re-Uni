@@ -4,7 +4,7 @@ import { api } from "@/lib/axios";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft, X } from "lucide-react";
+import { Home, ArrowLeft, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { RepublicaHeader } from "@/components/detalhes/RepublicaHeader";
 import { RepublicaImagens } from "@/components/detalhes/RepublicaImagens";
@@ -109,6 +109,26 @@ export default function DetalhesRepublicaPage() {
     const isPendenteComprovante = statusAluguel === "pendente_comprovante";
     const podeVerPainelManutencao = temAluguelAtivo || isPendenteComprovante;
 
+
+    const dataUltimoPagamento = meuAluguel?.data_ultimo_pagamento;
+    let estaPago = false;
+    let dataProximoVencimento = "";
+
+    if (dataUltimoPagamento) {
+        const dataPagamento = new Date(dataUltimoPagamento);
+        const agora = new Date();
+        const diffEmDias = (agora.getTime() - dataPagamento.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (diffEmDias <= 30) {
+            estaPago = true;
+
+            const proximoData = new Date(dataPagamento);
+            proximoData.setDate(proximoData.getDate() + 30);
+            dataProximoVencimento = proximoData.toLocaleDateString("pt-BR");
+        }
+    }
+
+
     const mesReferenciaAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     return (
@@ -167,17 +187,35 @@ export default function DetalhesRepublicaPage() {
                             idRepublica={Number(id)}
                         />
 
+                        {}
                         {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
-                            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                                <h4 className="font-bold text-blue-950 text-sm">Fatura / Aluguel</h4>
-                                <p className="text-xs text-slate-500">Realize o pagamento da sua mensalidade via PIX ou em dinheiro.</p>
-                                <Button
-                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
-                                    onClick={() => setIsPixModalOpen(true)}
-                                >
-                                    Realizar Pagamento
-                                </Button>
-                            </div>
+                            estaPago ? (
+                                <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-emerald-800">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        <h3 className="font-bold text-base">Mensalidade em dia!</h3>
+                                    </div>
+                                    <p className="text-sm text-emerald-700/80 leading-relaxed">
+                                        Tudo certo com o seu aluguel deste ciclo. O seu próximo vencimento será a partir de <strong className="text-emerald-800">{dataProximoVencimento}</strong>.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                                    <h4 className="font-bold text-blue-950 text-sm">Fatura / Aluguel</h4>
+                                    <p className="text-xs text-slate-500">Realize o pagamento da sua mensalidade via PIX ou em dinheiro.</p>
+                                    <Button
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
+                                        onClick={() => setIsPixModalOpen(true)}
+                                    >
+                                        Realizar Pagamento
+                                    </Button>
+                                </div>
+                            )
+                        )}
+
+                        {}
+                        {temAluguelAtivo && meuAluguel?.status_matricula !== "aprovado" && meuAluguel?.id_aluguel && (
+                            <EnviarMatriculaModal idAluguel={meuAluguel.id_aluguel} />
                         )}
 
                         {temAluguelAtivo && meuAluguel?.status_matricula === "aprovado" && meuAluguel?.id_aluguel && (
