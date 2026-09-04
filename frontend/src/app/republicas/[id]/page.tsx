@@ -16,6 +16,7 @@ import { SecaoAvaliacoes } from "@/components/republicas/SecaoAvaliacoes";
 import { PainelManutencao } from "@/components/manutencao/PainelManutencao";
 import { EnviarMatriculaModal } from "@/components/estudante/EnviarMatriculaModal";
 import { ModalOpcoesPagamento } from "@/components/estudante/ModalPagamentoPix";
+import { ModalPagamentoDespesa } from "@/components/estudante/ModalPagamentoDespesa";
 
 export default function DetalhesRepublicaPage() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function DetalhesRepublicaPage() {
     const [token, setToken] = useState<string | null>(null);
 
     const [isPixModalOpen, setIsPixModalOpen] = useState(false);
+    const [despesaPagamento, setDespesaPagamento] = useState<any>(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem("@ReUni:token");
@@ -83,6 +85,47 @@ export default function DetalhesRepublicaPage() {
         }
     });
 
+    const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
+    const statusAluguel = meuAluguel?.status?.toLowerCase();
+    const temAluguelAtivo = ["ativo", "aprovado"].includes(statusAluguel);
+    const isPendente = statusAluguel === "pendente";
+    const isPendenteComprovante = statusAluguel === "pendente_comprovante";
+    const podeVerPainelManutencao = temAluguelAtivo || isPendenteComprovante;
+
+    const { data: despesas = [] } = useQuery({
+        queryKey: ["despesas-estudante", id],
+        queryFn: async () => {
+            const response = await api.get(`/despesas?id_republica=${id}`);
+            return response.data;
+        },
+        enabled: !!id && temAluguelAtivo,
+    });
+
+    const minhasDespesasRateio = despesas.flatMap((d: any) =>
+        (d.divisoes || [])
+        .filter((div: any) => div.id_usuario === meuAluguel?.id_usuario)
+        .map((div: any) => ({ ...div, despesa_pai: d }))
+    );
+
+    const dataUltimoPagamento = meuAluguel?.data_ultimo_pagamento;
+    let estaPago = false;
+    let dataProximoVencimento = "";
+
+    if (dataUltimoPagamento) {
+        const dataPagamento = new Date(dataUltimoPagamento);
+        const agora = new Date();
+        const diffEmDias = (agora.getTime() - dataPagamento.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (diffEmDias <= 30) {
+            estaPago = true;
+            const proximoData = new Date(dataPagamento);
+            proximoData.setDate(proximoData.getDate() + 30);
+            dataProximoVencimento = proximoData.toLocaleDateString("pt-BR");
+        }
+    }
+
+    const mesReferenciaAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -101,35 +144,6 @@ export default function DetalhesRepublicaPage() {
             </div>
         );
     }
-
-    const idRepublicaStr = Array.isArray(id) ? id[0] : (id || "");
-    const statusAluguel = meuAluguel?.status?.toLowerCase();
-    const temAluguelAtivo = ["ativo", "aprovado"].includes(statusAluguel);
-    const isPendente = statusAluguel === "pendente";
-    const isPendenteComprovante = statusAluguel === "pendente_comprovante";
-    const podeVerPainelManutencao = temAluguelAtivo || isPendenteComprovante;
-
-
-    const dataUltimoPagamento = meuAluguel?.data_ultimo_pagamento;
-    let estaPago = false;
-    let dataProximoVencimento = "";
-
-    if (dataUltimoPagamento) {
-        const dataPagamento = new Date(dataUltimoPagamento);
-        const agora = new Date();
-        const diffEmDias = (agora.getTime() - dataPagamento.getTime()) / (1000 * 60 * 60 * 24);
-
-        if (diffEmDias <= 30) {
-            estaPago = true;
-
-            const proximoData = new Date(dataPagamento);
-            proximoData.setDate(proximoData.getDate() + 30);
-            dataProximoVencimento = proximoData.toLocaleDateString("pt-BR");
-        }
-    }
-
-
-    const mesReferenciaAtual = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
     return (
         <div className="min-h-screen bg-slate-50/60 text-slate-900 pb-20 relative">
@@ -187,7 +201,6 @@ export default function DetalhesRepublicaPage() {
                             idRepublica={Number(id)}
                         />
 
-                        {}
                         {(temAluguelAtivo || isPendenteComprovante) && meuAluguel?.id_aluguel && (
                             estaPago ? (
                                 <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-2">
@@ -213,7 +226,41 @@ export default function DetalhesRepublicaPage() {
                             )
                         )}
 
-                        {}
+                        {minhasDespesasRateio.length > 0 && (
+                            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                                <h4 className="font-bold text-blue-950 text-sm border-b border-slate-100 pb-2">Rateio de Contas</h4>
+
+                                {minhasDespesasRateio.map((div: any) => (
+                                    <div key={div.id_despesa_inquilino} className="flex flex-col gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-900 rounded-md uppercase">{div.despesa_pai.categoria}</span>
+                                                <p className="text-sm font-bold text-slate-800 mt-1">{div.despesa_pai.titulo}</p>
+                                            </div>
+                                            <p className="text-sm font-extrabold text-blue-950">R$ {Number(div.valor_parte).toFixed(2)}</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/60">
+                                            <p className="text-[10px] text-slate-500">Vence: {div.despesa_pai.data_vencimento}</p>
+                                            {div.status_pagamento === "pago" ? (
+                                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-md flex items-center gap-1">
+                                                    <CheckCircle2 className="w-3 h-3" /> Pago
+                                                </span>
+                                            ) : (
+                                                <Button
+                                                    size="sm"
+                                                    className="h-7 text-xs px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 font-bold"
+                                                    onClick={() => setDespesaPagamento(div)}
+                                                >
+                                                    Pagar
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {temAluguelAtivo && meuAluguel?.status_matricula !== "aprovado" && meuAluguel?.id_aluguel && (
                             <EnviarMatriculaModal idAluguel={meuAluguel.id_aluguel} />
                         )}
@@ -244,6 +291,25 @@ export default function DetalhesRepublicaPage() {
                             idAluguel={meuAluguel.id_aluguel}
                             valor={Number(republica.valor_mensal || republica.valor || 0)}
                             mesReferencia={mesReferenciaAtual.charAt(0).toUpperCase() + mesReferenciaAtual.slice(1)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {despesaPagamento && (
+                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="relative w-full max-w-sm">
+                        <button
+                            onClick={() => setDespesaPagamento(null)}
+                            className="absolute -top-12 right-0 text-white hover:text-slate-200 bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <ModalPagamentoDespesa
+                            idDespesaInquilino={despesaPagamento.id_despesa_inquilino}
+                            valor={Number(despesaPagamento.valor_parte)}
+                            titulo={despesaPagamento.despesa_pai.titulo}
+                            onClose={() => setDespesaPagamento(null)}
                         />
                     </div>
                 </div>

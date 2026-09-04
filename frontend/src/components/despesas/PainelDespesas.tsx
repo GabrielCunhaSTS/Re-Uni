@@ -20,13 +20,44 @@ export function PainelDespesas({ idRepublica }: PainelDespesasProps) {
     const [dataVencimentoDespesa, setDataVencimentoDespesa] = useState("");
     const [inquilinosSelecionados, setInquilinosSelecionados] = useState<number[]>([]);
 
-
     const { data: estudantes = [] } = useQuery({
         queryKey: ["inquilinos-republica", idRepublica],
         queryFn: async () => {
             if (!idRepublica) return [];
-            const response = await api.get(`/alugueis/republicas/${idRepublica}/inquilinos`);
-            return response.data;
+            try {
+
+                const response = await api.get(`/alugueis/republicas/${idRepublica}/inquilinos`);
+                const dados = response.data;
+
+
+                if (Array.isArray(dados)) return dados;
+                if (dados?.inquilinos) return dados.inquilinos;
+                if (dados?.usuarios) return dados.usuarios;
+                if (dados?.data) return dados.data;
+
+                return [];
+            } catch (error) {
+                console.warn("Rota principal falhou. Acionando Fallback para buscar moradores...");
+
+                try {
+                    const res = await api.get(`/republicas/${idRepublica}`);
+                    const rep = res.data?.republica || res.data;
+
+                    if (rep?.alugueis) {
+                        return rep.alugueis
+                            .filter((a: any) => a.status === "ativo")
+                            .map((a: any) => ({
+                                id_usuario: a.usuario?.id_usuario || a.id_usuario,
+                                nome: a.usuario?.nome || "Morador",
+                                email: a.usuario?.email || "Sem e-mail"
+                            }))
+                            .filter((u: any) => u.id_usuario);
+                    }
+                } catch (fallbackError) {
+                    console.error("Falha no fallback ao buscar inquilinos:", fallbackError);
+                }
+                return [];
+            }
         },
         enabled: !!idRepublica,
     });
